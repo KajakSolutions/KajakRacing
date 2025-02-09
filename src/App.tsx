@@ -1,4 +1,4 @@
-import { KajakEngine } from '@kajaksolutions/kajakengine/src/index.ts'
+import { KajakEngine } from "@kajaksolutions/kajakengine"
 
 function App() {
     console.log(KajakEngine)
