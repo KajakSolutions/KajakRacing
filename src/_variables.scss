@@ -1,0 +1,19 @@
+$text: #ffffff;
+$background: #000000;
+$primary: #6495ed;
+$secondary: #75d8ef;
+$accent: #dd96ea;
+
+$linearPrimarySecondary: linear-gradient(#6495ed, #75d8ef);
+$linearPrimaryAccent: linear-gradient(#6495ed, #dd96ea);
+$linearSecondaryAccent: linear-gradient(#75d8ef, #dd96ea);
+$radialPrimarySecondary: radial-gradient(#6495ed, #75d8ef);
+$radialPrimaryAccent: radial-gradient(#6495ed, #dd96ea);
+$radialSecondaryAccent: radial-gradient(#75d8ef, #dd96ea);
+
+@mixin FlexCenter($flex-direction) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: $flex-direction;
+}

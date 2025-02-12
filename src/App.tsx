@@ -1,13 +1,13 @@
-import { KajakEngine } from "@kajaksolutions/kajakengine"
+import Header from "./components/Header/Header"
+import CarStats from "./components/CarStats/CarStats"
+import Slider from "./components/Slider/Slider"
 
 function App() {
-    console.log(KajakEngine)
     return (
         <>
-            <h1>Witam do naszej gry Kajak Racing</h1>
-            <span>
-                Nic tu jeszcze nie ma bo czekamy na grafika/dev/nie wiem co
-            </span>
+            <Header></Header>
+            <CarStats></CarStats>
+            <Slider></Slider>
         </>
     )
 }
