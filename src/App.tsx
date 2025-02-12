@@ -161,10 +161,14 @@ function App() {
 
     return (
         <>
-            <canvas id="game" ref={canvasRef}></canvas>
-            {/*<Header></Header>*/}
-            {/*<CarStats></CarStats>*/}
-            {/*<Slider></Slider>*/}
+            <div id="game">
+                <canvas ref={canvasRef}></canvas>
+            </div>
+            {/*<div id="ui">*/}
+            {/*    <Header></Header>*/}
+            {/*    <CarStats></CarStats>*/}
+            {/*    <Slider></Slider>*/}
+            {/*</div>*/}
         </>
     )
 }
