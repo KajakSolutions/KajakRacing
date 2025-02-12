@@ -1,44 +1,43 @@
 @import "/src/variables";
 
 .wrapper {
-    width: 100%;
-    padding: 50px;
-    display: flex;
-    justify-content: end;
-    color: $text;
+  width: 100%;
+  padding: 50px;
+  display: flex;
+  justify-content: end;
+  color: $text;
 
-    .stats-container {
-        @include FlexCenter(column);
-        width: 300px;
+  .stats-container {
+    @include FlexCenter(column);
+    width: 300px;
 
-        .content {
-            width: 100%;
-            margin-bottom: 15px;
-            font-size: 18px;
-            @include FlexCenter(row);
-            justify-content: space-between;
+    .content {
+      width: 100%;
+      margin-bottom: 15px;
+      font-size: 18px;
+      @include FlexCenter(row);
+      justify-content: space-between;
 
-            .stars {
-                @include FlexCenter(row);
-                width: 110px;
+      .stars {
+        @include FlexCenter(row);
+        width: 110px;
 
-                .star {
-                    width: 20px;
-                    height: 20px;
-                    margin-left: 2px;
-                    background: url(.././src/public/img/star.svg);
-                    background-repeat: no-repeat;
-                    background-size: cover;
-                    &.active {
-                        filter: hue-rotate(270deg) sepia(100%) saturate(2000%)
-                            drop-shadow(0px 0px 5px rgb(174, 255, 0));
-                    }
-                }
-            }
+        .star {
+          width: 20px;
+          height: 20px;
+          margin-left: 2px;
+          background: url("/public/star.svg") no-repeat;
+          background-size: cover;
 
-            .drive {
-                width: 108px;
-            }
+          &.active {
+            filter: hue-rotate(270deg) sepia(100%) saturate(2000%) drop-shadow(0px 0px 5px rgb(174, 255, 0));
+          }
         }
+      }
+
+      .drive {
+        width: 108px;
+      }
     }
+  }
 }

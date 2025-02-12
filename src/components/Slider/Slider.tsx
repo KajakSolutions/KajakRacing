@@ -3,9 +3,9 @@ import { motion } from "framer-motion"
 import "./slider.scss"
 
 const pages = [
-    { id: 0, image: ".././src/public/img/bmw-e36.png" },
-    { id: 1, image: ".././src/public/img/saab-93.png" },
-    { id: 2, image: ".././src/public/img/nissan-gtr.png" },
+    { id: 0, image: "./bmw-e36.png" },
+    { id: 1, image: "./saab-93.png" },
+    { id: 2, image: "./nissan-gtr.png" },
 ]
 
 export default function Carousel() {

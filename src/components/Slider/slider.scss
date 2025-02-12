@@ -1,76 +1,78 @@
 .carousel-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 500px;
-    width: 100%;
-    overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 500px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .carousel-wrapper {
-    position: relative;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .carousel-slide {
-    position: absolute;
-    width: 55%;
-    height: 500px;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  position: absolute;
+  width: 55%;
+  height: 500px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .carousel-image {
-    height: 100%;
-    object-fit: contain;
-    object-position: center;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
 }
 
 .carousel-button {
-    position: absolute;
-    z-index: 10;
-    cursor: pointer;
-    background: none;
-    border: none;
+  position: absolute;
+  z-index: 10;
+  cursor: pointer;
+  background: none;
+  border: none;
+
+  &:hover {
+    transform: translateX(6px);
+  }
+
+  &:active {
+    transform: translateX(12px);
+  }
+
+  &:has(.left) {
     &:hover {
-        transform: translateX(6px);
-    }
-    &:active {
-        transform: translateX(12px);
+      transform: translateX(-6px);
     }
 
-    &:has(.left) {
-        &:hover {
-            transform: translateX(-6px);
-        }
-        &:active {
-            transform: translateX(-12px);
-        }
+    &:active {
+      transform: translateX(-12px);
     }
+  }
 }
 
 .carousel-button.left {
-    left: 1rem;
+  left: 1rem;
 }
 
 .carousel-button.right {
-    right: 1rem;
+  right: 1rem;
 }
 
 .arrow {
-    width: 100px;
-    height: 100px;
-    background: url(.././src/public/img/short-arrow.png);
-    background-repeat: no-repeat;
-    background-size: cover;
+  width: 100px;
+  height: 100px;
+  background: url(/public/short-arrow.png) no-repeat;
+  background-size: cover;
 
-    &.left {
-        rotate: 180deg;
-    }
+  &.left {
+    rotate: 180deg;
+  }
 }
