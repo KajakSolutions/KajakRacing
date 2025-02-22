@@ -1,33 +1,33 @@
 @import "/src/variables";
 
 header {
-  width: 100%;
-  color: $text;
-  padding: 50px;
-  @include FlexCenter(row);
-  justify-content: space-between;
-
-  .container {
+    width: 100%;
+    color: $text;
+    padding: 50px;
     @include FlexCenter(row);
+    justify-content: space-between;
 
-    .arrow {
-      width: 75px;
-      height: 75px;
-      margin-right: 50px;
-      background: url("/public/long-arrow.png") no-repeat;
-      background-size: cover;
+    .container {
+        @include FlexCenter(row);
 
-      &:hover {
-        transform: translateX(-6px);
-      }
+        .arrow {
+            width: 75px;
+            height: 75px;
+            margin-right: 50px;
+            background: url("/public/long-arrow.png") no-repeat;
+            background-size: cover;
+
+            &:hover {
+                transform: translateX(-6px);
+            }
+        }
+
+        h2 {
+            font-size: 44px;
+        }
     }
 
-    h2 {
-      font-size: 44px;
+    .budget {
+        font-size: 44px;
     }
-  }
-
-  .budget {
-    font-size: 44px;
-  }
 }

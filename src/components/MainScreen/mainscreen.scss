@@ -1,0 +1,37 @@
+@import "/src/variables";
+
+main {
+    height: 100svh;
+    width: 100svw;
+    background: linear-gradient(
+        rgba(128, 0, 128, 0.164),
+        rgba(0, 0, 255, 0.278)
+    );
+    @include FlexCenter(column);
+    justify-content: space-between;
+    padding: 5%;
+
+    h1 {
+        width: 100%;
+        text-align: center;
+        color: white;
+        font-size: 104px;
+    }
+
+    button {
+        width: 200px;
+        height: 75px;
+        font-size: 48px;
+        font-family: "Press Start 2P", monospace;
+        background: $primary;
+        color: white;
+        border: none;
+
+        &:hover {
+            background: darken($color: $primary, $amount: 10);
+        }
+        &:active {
+            transform: translateY(4px);
+        }
+    }
+}
