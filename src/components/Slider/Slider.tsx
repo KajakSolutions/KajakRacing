@@ -2,10 +2,16 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import "./slider.scss"
 
-const pages = [
+const originalSlides = [
     { id: 0, image: "./bmw-e36.png" },
     { id: 1, image: "./saab-93.png" },
     { id: 2, image: "./nissan-gtr.png" },
+]
+
+const pages = [
+    ...originalSlides,
+    ...originalSlides,
+    ...originalSlides
 ]
 
 export default function Carousel() {
@@ -30,13 +36,27 @@ export default function Carousel() {
                     const position = (i - index + pages.length) % pages.length
                     const isActive = position === 0
                     const scale = isActive ? 1 : 0.7
-                    const opacity = isActive ? 1 : 0.6
-                    const xOffset =
-                        position === 0
-                            ? "0%"
-                            : position === 1
-                              ? "100%"
-                              : "-100%"
+                    const opacity = position > 1 && position < pages.length - 1 ? 0 :isActive ? 1 : 0.6
+
+                    const xOffset = (() => {
+                        if (position === pages.length - 1) {
+                            return `-100%`
+                        }
+                        if (position > pages.length/2) {
+                            return `-200%`
+                        }
+
+                        if (position === 0) {
+                            return "0%"
+                        }
+
+                        if (position === 1) {
+                            return "100%"
+                        }
+                        return "200%"
+                    })()
+
+                    console.log(position, xOffset, opacity)
 
                     return (
                         <motion.div

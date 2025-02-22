@@ -1,4 +1,5 @@
-@import "/src/variables";
+@use "sass:color";
+@use "/src/variables" as *;
 
 main {
     height: 100svh;
@@ -28,7 +29,7 @@ main {
         border: none;
 
         &:hover {
-            background: darken($color: $primary, $amount: 10);
+            background: color.adjust($color: $primary, $lightness: -10%);
         }
         &:active {
             transform: translateY(4px);

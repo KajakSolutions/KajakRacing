@@ -3,6 +3,7 @@
 // import Slider from "./components/Slider/Slider"
 // import MainScreen from "./components/MainScreen/MainScreen"
 // import MapSelect from "./components/MapSelect/MapSelect"
+
 // import PauseScreen from "./components/PauseScreen/PauseScreen"
 
 function App() {
