@@ -1,13 +1,15 @@
-// import Header from "./components/Header/Header"
-// import CarStats from "./components/CarStats/CarStats"
-// import Slider from "./components/Slider/Slider"
+import CarSelect from "./components/CarSelect/CarSelect"
 // import MainScreen from "./components/MainScreen/MainScreen"
 // import MapSelect from "./components/MapSelect/MapSelect"
-
 // import PauseScreen from "./components/PauseScreen/PauseScreen"
+// import Leaderboard from "./components/Leaderboard/Leaderboard"
 
 function App() {
-    return <></>
+    return (
+        <>
+            <CarSelect></CarSelect>
+        </>
+    )
 }
 
 export default App

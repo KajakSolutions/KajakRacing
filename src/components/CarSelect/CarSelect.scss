@@ -1,0 +1,199 @@
+@use "sass:color";
+@use "/src/variables" as *;
+
+section {
+    height: 100svh;
+    width: 100svw;
+
+    header {
+        width: 100%;
+        color: $text;
+        padding: 50px;
+        @include FlexCenter(row);
+        justify-content: space-between;
+
+        .container {
+            @include FlexCenter(row);
+
+            .arrow {
+                width: 75px;
+                height: 75px;
+                margin-right: 50px;
+                background: url("/public/long-arrow.png") no-repeat;
+                background-size: cover;
+
+                &:hover {
+                    transform: translateX(-6px);
+                }
+            }
+
+            h2 {
+                font-size: 44px;
+            }
+        }
+
+        .budget {
+            font-size: 44px;
+        }
+    }
+
+    .stats-wrapper {
+        width: 100%;
+        padding: 50px;
+        display: flex;
+        justify-content: end;
+        color: $text;
+
+        .stats-container {
+            @include FlexCenter(column);
+            width: 300px;
+
+            .content {
+                width: 100%;
+                margin-bottom: 15px;
+                font-size: 18px;
+                @include FlexCenter(row);
+                justify-content: space-between;
+
+                .stars {
+                    @include FlexCenter(row);
+                    width: 110px;
+
+                    .star {
+                        width: 20px;
+                        height: 20px;
+                        margin-left: 2px;
+                        background: url("/public/star.svg") no-repeat;
+                        background-size: cover;
+
+                        &.active {
+                            filter: hue-rotate(270deg) sepia(100%)
+                                saturate(2000%)
+                                drop-shadow(0px 0px 5px rgb(174, 255, 0));
+                        }
+                    }
+                }
+
+                .drive {
+                    width: 108px;
+                }
+            }
+        }
+    }
+
+    .carousel-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 500px;
+        @include Mobile(1600px) {
+            height: 400px;
+        }
+        @include Mobile(1250px) {
+            height: 300px;
+        }
+        width: 100%;
+        overflow: hidden;
+
+        .carousel-wrapper {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .carousel-slide {
+            position: absolute;
+            width: 55%;
+            height: 500px;
+            @include Mobile(1600px) {
+                height: 400px;
+            }
+            @include Mobile(1250px) {
+                height: 300px;
+            }
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .carousel-image {
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .carousel-button {
+            position: absolute;
+            z-index: 10;
+            cursor: pointer;
+            background: none;
+            border: none;
+
+            &:hover {
+                transform: translateX(6px);
+            }
+
+            &:active {
+                transform: translateX(12px);
+            }
+
+            &:has(.left) {
+                &:hover {
+                    transform: translateX(-6px);
+                }
+
+                &:active {
+                    transform: translateX(-12px);
+                }
+            }
+        }
+
+        .carousel-button.left {
+            left: 1rem;
+        }
+
+        .carousel-button.right {
+            right: 1rem;
+        }
+
+        .arrow {
+            width: 100px;
+            height: 100px;
+            background: url(/public/short-arrow.png) no-repeat;
+            background-size: cover;
+
+            &.left {
+                rotate: 180deg;
+            }
+        }
+    }
+
+    .buttons-container {
+        width: 100%;
+        margin-top: 50px;
+        @include FlexCenter(row);
+
+        button {
+            margin: 25px;
+            padding: 0px 25px;
+            height: 75px;
+            font-size: 36px;
+            font-family: "Press Start 2P", monospace;
+            background: $primary;
+            text-transform: uppercase;
+            color: $text;
+            border: none;
+
+            &:hover {
+                background: color.adjust($color: $primary, $lightness: -10%);
+            }
+            &:active {
+                transform: translateY(4px);
+            }
+        }
+    }
+}

@@ -17,3 +17,9 @@ $radialSecondaryAccent: radial-gradient(#75d8ef, #dd96ea);
     align-items: center;
     flex-direction: $flex-direction;
 }
+
+@mixin Mobile($px) {
+    @media (max-width: $px) {
+        @content;
+    }
+}

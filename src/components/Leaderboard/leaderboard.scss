@@ -1,0 +1,73 @@
+@use "sass:color";
+@use "/src/variables" as *;
+
+section {
+    height: 100svh;
+    width: 100svw;
+    @include FlexCenter(column);
+    background: rgba(250, 250, 250, 0.1);
+    backdrop-filter: grayscale(100%);
+
+    .container {
+        width: 700px;
+        background: $primary;
+        box-shadow: 20px 20px 0 black;
+        outline: 4px $primary solid;
+        border: 3px black solid;
+        padding: 30px;
+        @include FlexCenter(column);
+
+        h2 {
+            font-size: 40px;
+            text-align: center;
+            margin: 25px 0px 40px 0px;
+            text-transform: uppercase;
+        }
+
+        .player-container {
+            width: 100%;
+            padding: 15px 20px;
+            margin: 10px 0px;
+            @include FlexCenter(row);
+            justify-content: space-between;
+
+            p {
+                font-size: 24px;
+
+                &.place {
+                    font-size: 34px;
+                }
+            }
+
+            .img {
+                height: 60px;
+                width: 90px;
+                background: url("/public/nissan-gtr.png") no-repeat;
+                background-size: contain;
+            }
+        }
+
+        h3 {
+            font-size: 42px;
+            margin: 25px 0px;
+        }
+
+        button {
+            margin: 15px 0;
+            width: 100%;
+            height: 75px;
+            font-size: 26px;
+            font-family: "Press Start 2P", monospace;
+            background: $secondary;
+            color: black;
+            border: none;
+
+            &:hover {
+                background: color.adjust($color: $secondary, $lightness: -10%);
+            }
+            &:active {
+                transform: translateY(4px);
+            }
+        }
+    }
+}
