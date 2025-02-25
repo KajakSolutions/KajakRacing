@@ -23,3 +23,9 @@ $radialSecondaryAccent: radial-gradient(#75d8ef, #dd96ea);
         @content;
     }
 }
+
+@mixin MobileVH($px) {
+    @media (max-height: $px) {
+        @content;
+    }
+}

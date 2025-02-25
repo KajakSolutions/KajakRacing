@@ -5,10 +5,19 @@ section {
     height: 100svh;
     width: 100svw;
 
+    // * {
+    //     border: red dotted 1px;
+    // }
+
     header {
         width: 100%;
         color: $text;
         padding: 50px;
+
+        @include MobileVH(860px) {
+            padding: 35px;
+        }
+
         @include FlexCenter(row);
         justify-content: space-between;
 
@@ -29,17 +38,25 @@ section {
 
             h2 {
                 font-size: 44px;
+
+                @include MobileVH(860px) {
+                    font-size: 37px;
+                }
             }
         }
 
         .budget {
             font-size: 44px;
+
+            @include MobileVH(860px) {
+                font-size: 37px;
+            }
         }
     }
 
     .stats-wrapper {
         width: 100%;
-        padding: 50px;
+        padding-right: 50px;
         display: flex;
         justify-content: end;
         color: $text;
@@ -52,6 +69,11 @@ section {
                 width: 100%;
                 margin-bottom: 15px;
                 font-size: 18px;
+
+                @include MobileVH(860px) {
+                    font-size: 15px;
+                }
+
                 @include FlexCenter(row);
                 justify-content: space-between;
 
@@ -87,12 +109,23 @@ section {
         align-items: center;
         justify-content: center;
         height: 500px;
+
         @include Mobile(1600px) {
             height: 400px;
         }
+
         @include Mobile(1250px) {
             height: 300px;
         }
+
+        @include MobileVH(860px) {
+            height: 300px;
+        }
+
+        @include MobileVH(700px) {
+            height: 225px;
+        }
+
         width: 100%;
         overflow: hidden;
 
@@ -108,12 +141,23 @@ section {
             position: absolute;
             width: 55%;
             height: 500px;
+
             @include Mobile(1600px) {
                 height: 400px;
             }
+
             @include Mobile(1250px) {
                 height: 300px;
             }
+
+            @include MobileVH(860px) {
+                height: 325px;
+            }
+
+            @include MobileVH(700px) {
+                height: 250px;
+            }
+
             overflow: hidden;
             display: flex;
             justify-content: center;
@@ -182,6 +226,19 @@ section {
             padding: 0px 25px;
             height: 75px;
             font-size: 36px;
+
+            @include MobileVH(860px) {
+                margin: 17.5px;
+                padding: 0px 17.5px;
+                height: 65px;
+                font-size: 32px;
+            }
+
+            @include MobileVH(700px) {
+                height: 50px;
+                font-size: 30px;
+            }
+
             font-family: "Press Start 2P", monospace;
             background: $primary;
             text-transform: uppercase;
