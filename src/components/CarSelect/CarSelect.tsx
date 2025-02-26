@@ -1,18 +1,63 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import "./CarSelect.scss"
-import { section } from "framer-motion/client"
 
-const originalSlides = [
-    { id: 0, image: "./bmw-e36.png" },
-    { id: 1, image: "./saab-93.png" },
-    { id: 2, image: "./nissan-gtr.png" },
+interface CarStats {
+    speed: number
+    nitro: number
+    drive: string
+}
+
+interface Car {
+    id: number
+    image: string
+    name: string
+    stats: CarStats
+}
+
+const cars: Car[] = [
+    {
+        id: 0,
+        image: "./bmw-e36.png",
+        name: "BMW E36",
+        stats: {
+            speed: 3,
+            nitro: 3,
+            drive: "FWD",
+        },
+    },
+    {
+        id: 1,
+        image: "./saab-93.png",
+        name: "Saab 93",
+        stats: {
+            speed: 2,
+            nitro: 4,
+            drive: "RWD",
+        },
+    },
+    {
+        id: 2,
+        image: "./nissan-gtr.png",
+        name: "Nissan GTR",
+        stats: {
+            speed: 3,
+            nitro: 2,
+            drive: "4WD",
+        },
+    },
 ]
 
-const pages = [...originalSlides, ...originalSlides, ...originalSlides]
+const pages = [...cars, ...cars, ...cars]
 
 export default function Carousel() {
     const [index, setIndex] = useState(0)
+    const [currentCar, setCurrentCar] = useState<Car>(cars[0])
+
+    useEffect(() => {
+        const realCarIndex = index % cars.length
+        setCurrentCar(cars[realCarIndex])
+    }, [index])
 
     const nextSlide = () => {
         setIndex((prev) => (prev + 1) % pages.length)
@@ -20,6 +65,12 @@ export default function Carousel() {
 
     const prevSlide = () => {
         setIndex((prev) => (prev - 1 + pages.length) % pages.length)
+    }
+
+    const renderStars = (value: number, maxStars: number = 5) => {
+        return Array.from({ length: maxStars }).map((_, i) => (
+            <div key={i} className={`star ${i < value ? "active" : ""}`}></div>
+        ))
     }
 
     return (
@@ -36,26 +87,18 @@ export default function Carousel() {
                     <div className="content">
                         <p>Predkosc:</p>
                         <div className="speed stars">
-                            <div className="star active"></div>
-                            <div className="star active"></div>
-                            <div className="star active"></div>
-                            <div className="star"></div>
-                            <div className="star"></div>
+                            {renderStars(currentCar.stats.speed)}
                         </div>
                     </div>
                     <div className="content">
                         <p>Nitro:</p>
                         <div className="nitro stars">
-                            <div className="star active"></div>
-                            <div className="star active"></div>
-                            <div className="star active"></div>
-                            <div className="star active"></div>
-                            <div className="star"></div>
+                            {renderStars(currentCar.stats.nitro)}
                         </div>
                     </div>
                     <div className="content">
                         <p>Naped:</p>
-                        <p className="drive">RWD</p>
+                        <p className="drive">{currentCar.stats.drive}</p>
                     </div>
                 </div>
             </div>
@@ -95,11 +138,9 @@ export default function Carousel() {
                             return "200%"
                         })()
 
-                        console.log(position, xOffset, opacity)
-
                         return (
                             <motion.div
-                                key={page.id}
+                                key={`${page.id}-${i}`}
                                 className="carousel-slide"
                                 animate={{
                                     x: xOffset,
@@ -114,7 +155,7 @@ export default function Carousel() {
                             >
                                 <img
                                     src={page.image}
-                                    alt={`Slide ${page.id}`}
+                                    alt={`${page.name}`}
                                     className="carousel-image"
                                 />
                             </motion.div>
