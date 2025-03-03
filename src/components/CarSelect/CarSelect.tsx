@@ -12,14 +12,18 @@ interface Car {
     id: number
     image: string
     name: string
+    price: number
+    owned: boolean
     stats: CarStats
 }
 
-const cars: Car[] = [
+const initialCars: Car[] = [
     {
         id: 0,
         image: "./bmw-e36.png",
         name: "BMW E36",
+        price: 100,
+        owned: false,
         stats: {
             speed: 3,
             nitro: 3,
@@ -30,6 +34,8 @@ const cars: Car[] = [
         id: 1,
         image: "./saab-93.png",
         name: "Saab 93",
+        price: 0,
+        owned: true,
         stats: {
             speed: 2,
             nitro: 4,
@@ -40,6 +46,8 @@ const cars: Car[] = [
         id: 2,
         image: "./nissan-gtr.png",
         name: "Nissan GTR",
+        price: 100,
+        owned: false,
         stats: {
             speed: 3,
             nitro: 2,
@@ -48,16 +56,18 @@ const cars: Car[] = [
     },
 ]
 
-const pages = [...cars, ...cars, ...cars]
-
 export default function Carousel() {
+    const [cars, setCars] = useState<Car[]>(initialCars)
     const [index, setIndex] = useState(0)
     const [currentCar, setCurrentCar] = useState<Car>(cars[0])
+    const [budget, setBudget] = useState(200)
+
+    const pages = [...cars, ...cars, ...cars]
 
     useEffect(() => {
         const realCarIndex = index % cars.length
         setCurrentCar(cars[realCarIndex])
-    }, [index])
+    }, [index, cars])
 
     const nextSlide = () => {
         setIndex((prev) => (prev + 1) % pages.length)
@@ -73,6 +83,27 @@ export default function Carousel() {
         ))
     }
 
+    const handlePurchase = () => {
+        const realCarIndex = index % cars.length
+        const carToBuy = cars[realCarIndex]
+
+        if (carToBuy.owned) {
+            return
+        }
+
+        if (budget >= carToBuy.price) {
+            setBudget((prev) => prev - carToBuy.price)
+
+            const updatedCars = [...cars]
+            updatedCars[realCarIndex] = {
+                ...carToBuy,
+                owned: true,
+            }
+
+            setCars(updatedCars)
+        }
+    }
+
     return (
         <section>
             <header>
@@ -80,7 +111,7 @@ export default function Carousel() {
                     <div className="arrow"></div>
                     <h2>Wybierz swoj pojazd</h2>
                 </div>
-                <div className="budget">0000$</div>
+                <div className="budget">{budget}$</div>
             </header>
             <div className="stats-wrapper">
                 <div className="stats-container">
@@ -141,7 +172,7 @@ export default function Carousel() {
                         return (
                             <motion.div
                                 key={`${page.id}-${i}`}
-                                className="carousel-slide"
+                                className={`carousel-slide ${page.owned ? "owned" : "not-owned"}`}
                                 animate={{
                                     x: xOffset,
                                     scale,
@@ -169,9 +200,25 @@ export default function Carousel() {
             </div>
 
             <div className="buttons-container">
-                <button>Edytuj</button>
-                <button>Graj</button>
-                <button>Kup</button>
+                <button
+                    className={`edit-button ${!currentCar.owned ? "disabled" : ""}`}
+                    disabled={!currentCar.owned}
+                >
+                    Edytuj
+                </button>
+                <button
+                    className={`play-button ${!currentCar.owned ? "disabled" : ""}`}
+                    disabled={!currentCar.owned}
+                >
+                    Graj
+                </button>
+                <button
+                    className={`buy-button ${currentCar.owned || budget < currentCar.price ? "disabled" : ""}`}
+                    onClick={handlePurchase}
+                    disabled={currentCar.owned || budget < currentCar.price}
+                >
+                    Kup
+                </button>
             </div>
         </section>
     )

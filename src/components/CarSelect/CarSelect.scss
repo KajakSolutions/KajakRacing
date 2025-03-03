@@ -47,6 +47,7 @@ section {
 
         .budget {
             font-size: 44px;
+            font-weight: bold;
 
             @include MobileVH(860px) {
                 font-size: 37px;
@@ -167,6 +168,32 @@ section {
             display: flex;
             justify-content: center;
             align-items: center;
+
+            &.owned {
+                &::after {
+                    content: "";
+                }
+            }
+
+            &.not-owned {
+                img {
+                    filter: grayscale(100%) brightness(0.35);
+                }
+
+                &::after {
+                    content: "100$";
+                    position: absolute;
+                    font-size: 72px;
+                    color: $text;
+                    border-radius: 50%;
+                    padding: 5px;
+                    width: 40px;
+                    height: 40px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+            }
         }
 
         .carousel-image {
@@ -250,11 +277,18 @@ section {
             color: $text;
             border: none;
 
-            &:hover {
+            &:hover:not(.disabled) {
                 background: color.adjust($color: $primary, $lightness: -10%);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             }
-            &:active {
+
+            &:active:not(.disabled) {
                 transform: translateY(4px);
+                box-shadow: none;
+            }
+
+            &.disabled {
+                display: none;
             }
         }
     }
