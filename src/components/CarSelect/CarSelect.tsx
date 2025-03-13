@@ -105,121 +105,149 @@ export default function Carousel() {
     }
 
     return (
-        <section>
-            <header>
-                <div className="container">
-                    <div className="arrow"></div>
-                    <h2>Wybierz swoj pojazd</h2>
-                </div>
-                <div className="budget">{budget}$</div>
-            </header>
-            <div className="stats-wrapper">
-                <div className="stats-container">
-                    <div className="content">
-                        <p>Predkosc:</p>
-                        <div className="speed stars">
-                            {renderStars(currentCar.stats.speed)}
+        <>
+            <section>
+                <header>
+                    <div className="container">
+                        <div className="arrow"></div>
+                        <h2>Wybierz swoj pojazd</h2>
+                    </div>
+                    <div className="budget">${budget}</div>
+                </header>
+                <div className="stats-wrapper">
+                    <div className="stats-container">
+                        <div className="content">
+                            <p>Predkosc:</p>
+                            <div className="speed stars">
+                                {renderStars(currentCar.stats.speed)}
+                            </div>
+                        </div>
+                        <div className="content">
+                            <p>Nitro:</p>
+                            <div className="nitro stars">
+                                {renderStars(currentCar.stats.nitro)}
+                            </div>
+                        </div>
+                        <div className="content">
+                            <p>Naped:</p>
+                            <p className="drive">{currentCar.stats.drive}</p>
                         </div>
                     </div>
-                    <div className="content">
-                        <p>Nitro:</p>
-                        <div className="nitro stars">
-                            {renderStars(currentCar.stats.nitro)}
+                </div>
+                <div className="carousel-container">
+                    <button
+                        onClick={prevSlide}
+                        className="carousel-button left"
+                    >
+                        <div className="arrow left"></div>
+                    </button>
+
+                    <div className="carousel-wrapper">
+                        {pages.map((page, i) => {
+                            const position =
+                                (i - index + pages.length) % pages.length
+                            const isActive = position === 0
+                            const scale = isActive ? 1 : 0.7
+                            const opacity =
+                                position > 1 && position < pages.length - 1
+                                    ? 0
+                                    : isActive
+                                      ? 1
+                                      : 0.6
+
+                            const xOffset = (() => {
+                                if (position === pages.length - 1) {
+                                    return `-100%`
+                                }
+                                if (position > pages.length / 2) {
+                                    return `-200%`
+                                }
+
+                                if (position === 0) {
+                                    return "0%"
+                                }
+
+                                if (position === 1) {
+                                    return "100%"
+                                }
+                                return "200%"
+                            })()
+
+                            return (
+                                <motion.div
+                                    key={`${page.id}-${i}`}
+                                    className={`carousel-slide ${page.owned ? "owned" : "not-owned"}`}
+                                    animate={{
+                                        x: xOffset,
+                                        scale,
+                                        opacity,
+                                    }}
+                                    transition={{
+                                        type: "spring",
+                                        stiffness: 200,
+                                        damping: 20,
+                                    }}
+                                >
+                                    <img
+                                        src={page.image}
+                                        alt={`${page.name}`}
+                                        className="carousel-image"
+                                    />
+                                </motion.div>
+                            )
+                        })}
+                    </div>
+
+                    <button
+                        onClick={nextSlide}
+                        className="carousel-button right"
+                    >
+                        <div className="arrow"></div>
+                    </button>
+                </div>
+
+                <div className="buttons-container">
+                    <button
+                        className={`edit-button ${!currentCar.owned ? "disabled" : ""}`}
+                        disabled={!currentCar.owned}
+                    >
+                        Edytuj
+                    </button>
+                    <button
+                        className={`play-button ${!currentCar.owned ? "disabled" : ""}`}
+                        disabled={!currentCar.owned}
+                    >
+                        Graj
+                    </button>
+                    <button
+                        className={`buy-button ${currentCar.owned || budget < currentCar.price ? "disabled" : ""}`}
+                        onClick={handlePurchase}
+                        disabled={currentCar.owned || budget < currentCar.price}
+                    >
+                        Kup
+                    </button>
+                </div>
+            </section>
+
+            <div className="car-edit-container">
+                <div className="content">
+                    <header className="header">
+                        <div className="container">
+                            <div className="arrow"></div>
+                            <h2>Edytuj swoj pojazd</h2>
                         </div>
+                        <div className="budget">${budget}</div>
+                    </header>
+                    <div className="wrapper">
+                        <div className="car-container">
+                            <img src="" alt="" />
+                        </div>
+                        <div className="settings-container"></div>
                     </div>
-                    <div className="content">
-                        <p>Naped:</p>
-                        <p className="drive">{currentCar.stats.drive}</p>
-                    </div>
+                    <p>Razem: $0</p>
+                    <button>Zaplac</button>
                 </div>
             </div>
-            <div className="carousel-container">
-                <button onClick={prevSlide} className="carousel-button left">
-                    <div className="arrow left"></div>
-                </button>
-
-                <div className="carousel-wrapper">
-                    {pages.map((page, i) => {
-                        const position =
-                            (i - index + pages.length) % pages.length
-                        const isActive = position === 0
-                        const scale = isActive ? 1 : 0.7
-                        const opacity =
-                            position > 1 && position < pages.length - 1
-                                ? 0
-                                : isActive
-                                  ? 1
-                                  : 0.6
-
-                        const xOffset = (() => {
-                            if (position === pages.length - 1) {
-                                return `-100%`
-                            }
-                            if (position > pages.length / 2) {
-                                return `-200%`
-                            }
-
-                            if (position === 0) {
-                                return "0%"
-                            }
-
-                            if (position === 1) {
-                                return "100%"
-                            }
-                            return "200%"
-                        })()
-
-                        return (
-                            <motion.div
-                                key={`${page.id}-${i}`}
-                                className={`carousel-slide ${page.owned ? "owned" : "not-owned"}`}
-                                animate={{
-                                    x: xOffset,
-                                    scale,
-                                    opacity,
-                                }}
-                                transition={{
-                                    type: "spring",
-                                    stiffness: 200,
-                                    damping: 20,
-                                }}
-                            >
-                                <img
-                                    src={page.image}
-                                    alt={`${page.name}`}
-                                    className="carousel-image"
-                                />
-                            </motion.div>
-                        )
-                    })}
-                </div>
-
-                <button onClick={nextSlide} className="carousel-button right">
-                    <div className="arrow"></div>
-                </button>
-            </div>
-
-            <div className="buttons-container">
-                <button
-                    className={`edit-button ${!currentCar.owned ? "disabled" : ""}`}
-                    disabled={!currentCar.owned}
-                >
-                    Edytuj
-                </button>
-                <button
-                    className={`play-button ${!currentCar.owned ? "disabled" : ""}`}
-                    disabled={!currentCar.owned}
-                >
-                    Graj
-                </button>
-                <button
-                    className={`buy-button ${currentCar.owned || budget < currentCar.price ? "disabled" : ""}`}
-                    onClick={handlePurchase}
-                    disabled={currentCar.owned || budget < currentCar.price}
-                >
-                    Kup
-                </button>
-            </div>
-        </section>
+        </>
     )
 }
