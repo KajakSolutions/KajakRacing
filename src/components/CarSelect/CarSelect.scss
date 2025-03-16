@@ -346,15 +346,92 @@ header {
             gap: 15px;
 
             .car-container {
-                border: 1px dotted red;
+                // border: 1px dotted red;
                 height: 100%;
                 width: 57.5%;
+                @include FlexCenter(column);
             }
 
             .settings-container {
                 width: 42.5%;
                 height: 100%;
-                border: 1px dotted red;
+                @include FlexCenter(column);
+                // border: 1px dotted red;
+
+                [class$="-container"] {
+                    width: 100%;
+                    @include FlexCenter(column);
+
+                    p {
+                        font-size: 18px;
+                        margin: 20px 0px 2px 0px;
+
+                        @include MobileVH(650px) {
+                            margin: 10px 0px 0px 0px;
+                        }
+                    }
+
+                    .wrapper {
+                        @include FlexCenter(row);
+
+                        .block {
+                            height: 55px;
+                            width: 45px;
+                            background: $linearPrimaryAccent;
+                            opacity: 75%;
+                            transform: skew(-10deg);
+                        }
+
+                        .disabled {
+                            transform: skew(-10deg) scale(90%);
+                            background: rgba(128, 128, 128, 0.1);
+                        }
+
+                        .buy-more {
+                            font-size: 10px;
+                            @include FlexCenter(column);
+                            gap: 2px;
+                            color: $text;
+
+                            &::before {
+                                content: "+";
+                                font-size: 32px;
+                            }
+
+                            &::after {
+                                content: "$200";
+                            }
+
+                            &:active {
+                                transform: skew(-10deg) scale(90%)
+                                    translateY(3px);
+                            }
+                        }
+
+                        .color {
+                            height: 30px;
+                            width: 30px;
+                            border: 2px gray solid;
+                            border-radius: 3px;
+
+                            &:active {
+                                transform: translateY(3px);
+                            }
+                        }
+
+                        .red {
+                            background: red;
+                        }
+
+                        .blue {
+                            background: blue;
+                        }
+
+                        .yellow {
+                            background: yellow;
+                        }
+                    }
+                }
             }
         }
 
@@ -365,16 +442,10 @@ header {
         }
 
         button {
-            padding: 0px 25px;
-            height: 75px;
-            font-size: 36px;
-
-            @include MobileVH(860px) {
-                margin: 17.5px;
-                padding: 0px 17.5px;
-                height: 65px;
-                font-size: 32px;
-            }
+            margin: 17.5px;
+            padding: 0px 17.5px;
+            height: 65px;
+            font-size: 32px;
 
             @include MobileVH(700px) {
                 height: 50px;

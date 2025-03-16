@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
 import "./CarSelect.scss"
 
 interface CarStats {
@@ -15,6 +14,7 @@ interface Car {
     price: number
     owned: boolean
     stats: CarStats
+    color?: string
 }
 
 const initialCars: Car[] = [
@@ -61,6 +61,12 @@ export default function Carousel() {
     const [index, setIndex] = useState(0)
     const [currentCar, setCurrentCar] = useState<Car>(cars[0])
     const [budget, setBudget] = useState(200)
+    const [showEditScreen, setShowEditScreen] = useState(false)
+
+    // Edit screen states
+    const [speedUpgrades, setSpeedUpgrades] = useState(0)
+    const [nitroUpgrades, setNitroUpgrades] = useState(0)
+    const [totalCost, setTotalCost] = useState(0)
 
     const pages = [...cars, ...cars, ...cars]
 
@@ -68,6 +74,17 @@ export default function Carousel() {
         const realCarIndex = index % cars.length
         setCurrentCar(cars[realCarIndex])
     }, [index, cars])
+
+    useEffect(() => {
+        // Reset upgrades when edit screen is opened
+        if (showEditScreen) {
+            const currentSpeed = currentCar.stats.speed
+            const currentNitro = currentCar.stats.nitro
+            setSpeedUpgrades(0)
+            setNitroUpgrades(0)
+            setTotalCost(0)
+        }
+    }, [showEditScreen, currentCar])
 
     const nextSlide = () => {
         setIndex((prev) => (prev + 1) % pages.length)
@@ -104,9 +121,57 @@ export default function Carousel() {
         }
     }
 
+    const handleEditClick = () => {
+        setShowEditScreen(true)
+    }
+
+    const handleBackClick = () => {
+        setShowEditScreen(false)
+    }
+
+    const handleSpeedUpgrade = () => {
+        if (
+            currentCar.stats.speed + speedUpgrades < 5 &&
+            budget >= totalCost + 200
+        ) {
+            setSpeedUpgrades((prev) => prev + 1)
+            setTotalCost((prev) => prev + 200)
+        }
+    }
+
+    const handleNitroUpgrade = () => {
+        if (
+            currentCar.stats.nitro + nitroUpgrades < 5 &&
+            budget >= totalCost + 200
+        ) {
+            setNitroUpgrades((prev) => prev + 1)
+            setTotalCost((prev) => prev + 200)
+        }
+    }
+
+    const handlePayment = () => {
+        if (totalCost > 0 && budget >= totalCost) {
+            setBudget((prev) => prev - totalCost)
+
+            const realCarIndex = index % cars.length
+            const updatedCars = [...cars]
+            updatedCars[realCarIndex] = {
+                ...currentCar,
+                stats: {
+                    ...currentCar.stats,
+                    speed: currentCar.stats.speed + speedUpgrades,
+                    nitro: currentCar.stats.nitro + nitroUpgrades,
+                },
+            }
+
+            setCars(updatedCars)
+            setShowEditScreen(false)
+        }
+    }
+
     return (
         <>
-            <section>
+            <section style={{ display: showEditScreen ? "none" : "block" }}>
                 <header>
                     <div className="container">
                         <div className="arrow"></div>
@@ -173,19 +238,14 @@ export default function Carousel() {
                                 return "200%"
                             })()
 
+                            // Removed motion.div for retro feel, using regular div with direct styling
                             return (
-                                <motion.div
+                                <div
                                     key={`${page.id}-${i}`}
                                     className={`carousel-slide ${page.owned ? "owned" : "not-owned"}`}
-                                    animate={{
-                                        x: xOffset,
-                                        scale,
-                                        opacity,
-                                    }}
-                                    transition={{
-                                        type: "spring",
-                                        stiffness: 200,
-                                        damping: 20,
+                                    style={{
+                                        transform: `translateX(${xOffset}) scale(${scale})`,
+                                        opacity: opacity,
                                     }}
                                 >
                                     <img
@@ -193,7 +253,7 @@ export default function Carousel() {
                                         alt={`${page.name}`}
                                         className="carousel-image"
                                     />
-                                </motion.div>
+                                </div>
                             )
                         })}
                     </div>
@@ -210,6 +270,7 @@ export default function Carousel() {
                     <button
                         className={`edit-button ${!currentCar.owned ? "disabled" : ""}`}
                         disabled={!currentCar.owned}
+                        onClick={handleEditClick}
                     >
                         Edytuj
                     </button>
@@ -229,23 +290,97 @@ export default function Carousel() {
                 </div>
             </section>
 
-            <div className="car-edit-container">
+            <div
+                className="car-edit-container"
+                style={{ display: showEditScreen ? "block" : "none" }}
+            >
                 <div className="content">
                     <header className="header">
                         <div className="container">
-                            <div className="arrow"></div>
+                            <div
+                                className="arrow"
+                                onClick={handleBackClick}
+                            ></div>
                             <h2>Edytuj swoj pojazd</h2>
                         </div>
                         <div className="budget">${budget}</div>
                     </header>
                     <div className="wrapper">
                         <div className="car-container">
-                            <img src="" alt="" />
+                            <img
+                                src={currentCar.image}
+                                alt={currentCar.name}
+                                className="carousel-image"
+                            />
                         </div>
-                        <div className="settings-container"></div>
+                        <div className="settings-container">
+                            <div className="speed-container">
+                                <p>Ulepsz Predkosc</p>
+                                <div className="wrapper">
+                                    {Array.from({ length: 5 }).map((_, i) => {
+                                        const baseSpeed = currentCar.stats.speed
+                                        const isActive =
+                                            i < baseSpeed + speedUpgrades
+                                        const isPurchasable =
+                                            i === baseSpeed + speedUpgrades &&
+                                            i < 5
+
+                                        return (
+                                            <div
+                                                key={i}
+                                                className={`block ${!isActive ? "disabled" : ""} ${isPurchasable ? "buy-more" : ""}`}
+                                                onClick={
+                                                    isPurchasable
+                                                        ? handleSpeedUpgrade
+                                                        : undefined
+                                                }
+                                            ></div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                            <div className="nitro-container">
+                                <p>Ulepsz Nitro</p>
+                                <div className="wrapper">
+                                    {Array.from({ length: 5 }).map((_, i) => {
+                                        const baseNitro = currentCar.stats.nitro
+                                        const isActive =
+                                            i < baseNitro + nitroUpgrades
+                                        const isPurchasable =
+                                            i === baseNitro + nitroUpgrades &&
+                                            i < 5
+
+                                        return (
+                                            <div
+                                                key={i}
+                                                className={`block ${!isActive ? "disabled" : ""} ${isPurchasable ? "buy-more" : ""}`}
+                                                onClick={
+                                                    isPurchasable
+                                                        ? handleNitroUpgrade
+                                                        : undefined
+                                                }
+                                            ></div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                            <div className="color-container">
+                                <p>Zmien Kolor</p>
+                                <div className="wrapper">
+                                    <div className="color red"></div>
+                                    <div className="color blue"></div>
+                                    <div className="color yellow"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <p>Razem: $0</p>
-                    <button>Zaplac</button>
+                    <p>Razem: ${totalCost}</p>
+                    <button
+                        onClick={handlePayment}
+                        disabled={totalCost === 0 || budget < totalCost}
+                    >
+                        Zaplac
+                    </button>
                 </div>
             </div>
         </>
