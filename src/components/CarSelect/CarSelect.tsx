@@ -63,7 +63,6 @@ export default function Carousel() {
     const [budget, setBudget] = useState(200)
     const [showEditScreen, setShowEditScreen] = useState(false)
 
-    // Edit screen states
     const [speedUpgrades, setSpeedUpgrades] = useState(0)
     const [nitroUpgrades, setNitroUpgrades] = useState(0)
     const [totalCost, setTotalCost] = useState(0)
@@ -76,7 +75,6 @@ export default function Carousel() {
     }, [index, cars])
 
     useEffect(() => {
-        // Reset upgrades when edit screen is opened
         if (showEditScreen) {
             const currentSpeed = currentCar.stats.speed
             const currentNitro = currentCar.stats.nitro
@@ -238,7 +236,6 @@ export default function Carousel() {
                                 return "200%"
                             })()
 
-                            // Removed motion.div for retro feel, using regular div with direct styling
                             return (
                                 <div
                                     key={`${page.id}-${i}`}
