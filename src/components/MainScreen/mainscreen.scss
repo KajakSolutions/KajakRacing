@@ -4,10 +4,10 @@
 main {
     height: 100svh;
     width: 100svw;
-    background: linear-gradient(
-        rgba(128, 0, 128, 0.164),
-        rgba(0, 0, 255, 0.278)
-    );
+    background: url(/public/main-menu-img.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
     @include FlexCenter(column);
     justify-content: space-between;
     padding: 5%;
@@ -16,13 +16,15 @@ main {
         width: 100%;
         text-align: center;
         color: white;
-        font-size: 104px;
+        font-size: 7.5vw;
+        margin-top: 5vh;
     }
 
     button {
         width: 200px;
         height: 75px;
         font-size: 48px;
+        padding-left: 8px;
         font-family: "Press Start 2P", monospace;
         background: $primary;
         color: white;
