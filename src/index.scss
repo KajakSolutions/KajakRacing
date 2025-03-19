@@ -15,3 +15,85 @@ body {
     height: 100vh;
     width: 100vw;
 }
+
+//.app {
+//    position: relative;
+//    width: 100%;
+//    height: 100vh;
+//    display: flex;
+//    flex-direction: column;
+//    align-items: center;
+//    justify-content: center;
+//    overflow: hidden;
+//    background-color: #333;
+//}
+
+.game-container {
+    position: relative;
+    //width: 1280px;
+    //height: 720px;
+    background-color: #000;
+    //overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+
+
+    //canvas {
+    //    position: absolute;
+    //    top: 0;
+    //    left: 0;
+    //    z-index: 0;
+    //}
+}
+
+.game-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+
+@media (orientation: portrait) {
+    .app {
+        &::after {
+            content: "Please rotate your device to landscape mode for the best experience.";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            font-size: 24px;
+            z-index: 1000;
+        }
+    }
+}
+
+@media (max-width: 1280px) or (max-height: 720px) {
+    .game-container {
+        transform: scale(0.8);
+        transform-origin: center center;
+    }
+}
+
+.nitro-active {
+    .game-container {
+        animation: nitroShake 0.1s infinite;
+    }
+}
+
+@keyframes nitroShake {
+    0% { transform: translate(0, 0) scale(0.8); }
+    25% { transform: translate(2px, 1px) scale(0.8); }
+    50% { transform: translate(0, 0) scale(0.8); }
+    75% { transform: translate(-2px, 1px) scale(0.8); }
+    100% { transform: translate(0, 0) scale(0.8); }
+}

@@ -1,0 +1,161 @@
+{
+    "name": "Race Track 1",
+    "backgroundSrc": "game/map1.png",
+    "secondBackgroundSrc": "game/map_layer2.png",
+    "worldBounds": {
+        "x": -640,
+        "y": -360,
+        "width": 1280,
+        "height": 720
+    },
+    "checkpoints": [
+        {
+            "position": { "x": -46, "y": 10 },
+            "size": { "x": 10, "y": 2 },
+            "rotation": 45,
+            "order": 0,
+            "isFinishLine": false,
+            "collider": {
+                "type": "AABB",
+                "offset": { "x": -12, "y": -1 },
+                "size": { "x": 22, "y": 2 }
+            }
+        },
+        {
+            "position": { "x": -20, "y": 12 },
+            "size": { "x": 10, "y": 2 },
+            "rotation": 130,
+            "order": 1,
+            "isFinishLine": false,
+            "collider": {
+                "type": "AABB",
+                "offset": { "x": -1, "y": -12 },
+                "size": { "x": 2, "y": 18 }
+            }
+        },
+        {
+            "position": { "x": 25, "y": -18 },
+            "size": { "x": 10, "y": 2 },
+            "rotation": 65,
+            "order": 2,
+            "isFinishLine": false,
+            "collider": {
+                "type": "AABB",
+                "offset": { "x": -1, "y": -12 },
+                "size": { "x": 2, "y": 18 }
+            }
+        },
+        {
+            "position": { "x": 50, "y": 0 },
+            "size": { "x": 10, "y": 2 },
+            "rotation": 0,
+            "order": 3,
+            "isFinishLine": false,
+            "collider": {
+                "type": "AABB",
+                "offset": { "x": -12, "y": -1 },
+                "size": { "x": 22, "y": 2 }
+            }
+        },
+        {
+            "position": { "x": 26, "y": 16 },
+            "size": { "x": 10, "y": 2 },
+            "rotation": 245,
+            "order": 4,
+            "isFinishLine": false,
+            "collider": {
+                "type": "AABB",
+                "offset": { "x": -1, "y": -12 },
+                "size": { "x": 2, "y": 22 }
+            }
+        },
+        {
+            "position": { "x": -25, "y": -18 },
+            "size": { "x": 10, "y": 2 },
+            "rotation": 285,
+            "order": 5,
+            "isFinishLine": false,
+            "collider": {
+                "type": "AABB",
+                "offset": { "x": -1, "y": -12 },
+                "size": { "x": 2, "y": 22 }
+            }
+        },
+        {
+            "position": { "x": -45, "y": 0 },
+            "size": { "x": 10, "y": 2 },
+            "rotation": 0,
+            "order": 6,
+            "isFinishLine": true,
+            "collider": {
+                "type": "AABB",
+                "offset": { "x": -12, "y": -1 },
+                "size": { "x": 22, "y": 2 }
+            }
+        }
+    ],
+    "barriers": {
+        "thickness": 1,
+        "segments": [
+
+        ]
+    },
+    "aiCars": [
+
+    ],
+    "obstacles": [
+        {
+            "position": { "x": -309999996, "y": 0 },
+            "size": { "x": 2, "y": 2 },
+            "vertices": [
+                { "x": 0, "y": 14 },
+                { "x": 22, "y": 1 },
+                { "x": 22, "y": -1 },
+                { "x": 0, "y": -14 }
+            ],
+            "spriteSrc": "game/car1.png"
+        },
+        {
+            "position": { "x": 30000008, "y": 0 },
+            "size": { "x": 2, "y": 2 },
+            "vertices": [
+                { "x": 0, "y": 14 },
+                { "x": -22, "y": 1 },
+                { "x": -22, "y": -1 },
+                { "x": 0, "y": -14 }
+            ],
+            "spriteSrc": "game/car1.png"
+        }
+    ],
+    "startPosition": { "x": -45, "y": -10 },
+    "playerCarConfig": {
+        "spriteSrc": "game/car3.png",
+        "size": { "x": 1.5, "y": 3 }
+    },
+    "raceConfig": {
+        "totalLaps": 3,
+        "checkpointTimeout": 10000
+    },
+    "surfaces": {
+        "segments": [
+            {
+                "start": {"x": -10, "y": 0},
+                "end": {"x": 0, "y": 0},
+                "width": 10,
+                "type": "ASPHALT"
+            },
+            {
+                "start": {"x": 0, "y": 0},
+                "end": {"x": 10, "y": 0},
+                "width": 10,
+                "type": "GRAVEL"
+            },
+            {
+                "start": {"x": 10, "y": 0},
+                "end": {"x": 20, "y": 0},
+                "width": 10,
+                "type": "ICE"
+            }
+        ]
+    }
+}

@@ -1,0 +1,156 @@
+// src/components/HUD/HUD.scss
+
+.hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  font-family: 'Arial', sans-serif;
+  color: white;
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+
+  // Make buttons and interactive elements capture pointer events
+  button, .nitro-bar {
+    pointer-events: auto;
+  }
+
+  .hud-top {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+
+    .position-indicator, .lap-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 8px 15px;
+      border-radius: 8px;
+
+      .label {
+        font-size: 14px;
+        font-weight: bold;
+        opacity: 0.8;
+      }
+
+      .value {
+        font-size: 24px;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .hud-bottom {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+
+    .time-display {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+
+      .last-lap, .best-lap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding: 5px 10px;
+        border-radius: 5px;
+
+        .label {
+          font-size: 12px;
+          font-weight: bold;
+          opacity: 0.8;
+          width: 80px;
+        }
+
+        .value {
+          font-size: 16px;
+          font-weight: bold;
+          font-family: 'Courier New', monospace;
+        }
+      }
+
+      .best-lap {
+        .value {
+          color: #ffcc00;
+        }
+      }
+    }
+
+    .nitro-indicator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 8px 15px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+
+      &.active {
+        background-color: rgba(0, 100, 255, 0.7);
+        box-shadow: 0 0 15px rgba(0, 100, 255, 0.8);
+      }
+
+      .nitro-icon {
+        width: 24px;
+        height: 24px;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M7 2h10l-3 9h3l-7 11 1-9h-3l3-11z"/></svg>');
+        background-size: contain;
+        background-repeat: no-repeat;
+        filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+      }
+
+      .nitro-bar {
+        width: 100px;
+        height: 12px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        overflow: hidden;
+
+        .nitro-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #00c6ff, #0072ff);
+          width: 0;
+          transition: width 0.3s ease;
+        }
+      }
+    }
+  }
+
+  .pause-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.7);
+      transform: scale(1.05);
+    }
+  }
+}
