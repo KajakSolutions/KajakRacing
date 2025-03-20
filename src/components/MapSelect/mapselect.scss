@@ -1,7 +1,7 @@
 @use "sass:color";
 @use "/src/variables" as *;
 
-section {
+.map-select {
     color: $text;
     padding: 25px;
 

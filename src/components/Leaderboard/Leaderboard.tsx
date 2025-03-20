@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import { useGame } from "../../context/GameContext";
-import "./leaderboard.scss";
+// import "./leaderboard.scss";
 
 function Leaderboard() {
     const { raceResults, setGameState } = useGame();
     const [prize, setPrize] = useState(0);
 
-    
+
     useEffect(() => {
-        
+
         const playerResult = raceResults.find(result => result.isPlayer);
 
         if (playerResult) {
-            
+
             const position = playerResult.position;
             let prizeMoney = 0;
 
@@ -36,14 +36,14 @@ function Leaderboard() {
 
             setPrize(prizeMoney);
 
-            
+
             const currentBudget = localStorage.getItem("budget");
             if (currentBudget) {
                 const newBudget = parseInt(currentBudget) + prizeMoney;
                 localStorage.setItem("budget", newBudget.toString());
             }
 
-            
+
             const bestLapTime = playerResult.bestLapTime;
             if (bestLapTime) {
                 saveBestLapTime(bestLapTime);
@@ -52,14 +52,14 @@ function Leaderboard() {
     }, [raceResults]);
 
     const saveBestLapTime = (newTime: number) => {
-        
-        
+
+
         const trackId = "track1";
 
         const savedTimes = localStorage.getItem("trackBestTimes");
         const bestTimes = savedTimes ? JSON.parse(savedTimes) : {};
 
-        
+
         if (!bestTimes[trackId] || newTime < bestTimes[trackId]) {
             bestTimes[trackId] = newTime;
             localStorage.setItem("trackBestTimes", JSON.stringify(bestTimes));
@@ -78,7 +78,7 @@ function Leaderboard() {
         setGameState('MAIN_MENU');
     };
 
-    
+
     const getDriverName = (carId: number, isPlayer: boolean): string => {
         if (isPlayer) return "Gracz";
 
@@ -86,7 +86,7 @@ function Leaderboard() {
         return aiNames[carId % aiNames.length];
     };
 
-    
+
     if (!raceResults || raceResults.length === 0) {
         return (
             <section className="leaderboard">
@@ -99,7 +99,7 @@ function Leaderboard() {
         );
     }
 
-    
+
     const sortedResults = [...raceResults].sort((a, b) => a.position - b.position);
 
     return (

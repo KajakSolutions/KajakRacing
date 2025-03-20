@@ -10,7 +10,7 @@ function PauseScreen() {
     const [musicMuted, setMusicMuted] = useState(false);
     const [sfxMuted, setSfxMuted] = useState(false);
 
-    
+
     useEffect(() => {
         const savedSettings = localStorage.getItem("audioSettings");
         if (savedSettings) {
@@ -20,12 +20,12 @@ function PauseScreen() {
             setMusicMuted(settings.musicMuted);
             setSfxMuted(settings.sfxMuted);
 
-            
+
             applyAudioSettings(settings);
         }
     }, []);
 
-    
+
     useEffect(() => {
         const settings = {
             musicVolume,
@@ -36,12 +36,12 @@ function PauseScreen() {
 
         localStorage.setItem("audioSettings", JSON.stringify(settings));
 
-        
+
         applyAudioSettings(settings);
     }, [musicVolume, sfxVolume, musicMuted, sfxMuted]);
 
     const applyAudioSettings = (settings: any) => {
-        
+
         soundManager.setMusicVolume(settings.musicMuted ? 0 : settings.musicVolume / 100);
         soundManager.setSfxVolume(settings.sfxMuted ? 0 : settings.sfxVolume / 100);
 

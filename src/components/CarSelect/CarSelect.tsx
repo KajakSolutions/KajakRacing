@@ -30,7 +30,7 @@ const CarSelect = () => {
     const [nitroUpgrades, setNitroUpgrades] = useState(0);
     const [totalCost, setTotalCost] = useState(0);
 
-    
+
     useEffect(() => {
         const savedCars = localStorage.getItem("cars");
         const savedBudget = localStorage.getItem("budget");
@@ -38,7 +38,7 @@ const CarSelect = () => {
         if (savedCars) {
             setCars(JSON.parse(savedCars));
         } else {
-            
+
             const initialCars = [
                 {
                     id: 0,
@@ -88,7 +88,7 @@ const CarSelect = () => {
         }
     }, []);
 
-    
+
     useEffect(() => {
         if (cars.length > 0) {
             localStorage.setItem("cars", JSON.stringify(cars));
@@ -185,7 +185,7 @@ const CarSelect = () => {
     const handlePlayClick = () => {
         if (!currentCar || !currentCar.owned) return;
 
-        
+
         selectCar({
             id: currentCar.id,
             name: currentCar.name,
@@ -194,7 +194,7 @@ const CarSelect = () => {
             color: currentCar.color
         });
 
-        
+
         setGameState('MAP_SELECT');
     };
 
@@ -220,7 +220,7 @@ const CarSelect = () => {
         }
     };
 
-    
+
     const handleColorSelect = (color: string) => {
         if (!currentCar) return;
 
@@ -318,9 +318,9 @@ const CarSelect = () => {
                                         src={page.image}
                                         alt={`${page.name}`}
                                         className="carousel-image"
-                                        style={{
-                                            filter: page.color ? `hue-rotate(${getHueRotateValue(page.color)})` : 'none'
-                                        }}
+                                        // style={{
+                                        //     filter: page.color ? `hue-rotate(${getHueRotateValue(page.color)})` : 'none'
+                                        // }}
                                     />
                                 </div>
                             );

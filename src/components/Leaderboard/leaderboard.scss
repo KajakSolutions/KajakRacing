@@ -1,7 +1,7 @@
 @use "sass:color";
 @use "/src/variables" as *;
 
-section {
+.leaderboard section {
     height: 100svh;
     width: 100svw;
     @include FlexCenter(column);

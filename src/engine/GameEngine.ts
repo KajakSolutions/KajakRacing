@@ -40,6 +40,7 @@ export class GameEngine {
     private gameState: GameState = 'MAIN_MENU';
     private raceResultsListeners: ((results: RaceResults[]) => void)[] = [];
     private lapTimeListeners: ((lapTime: number, bestLap: number) => void)[] = [];
+    private isDriving: boolean = false;
 
     public async initialize(canvasElement: HTMLCanvasElement): Promise<void> {
         this.canvas = canvasElement;
@@ -197,7 +198,7 @@ export class GameEngine {
         if (!this.playerCar || this.nitroActive || !this.selectedCar) return;
 
         this.nitroActive = true;
-        const nitroBoost = this.selectedCar.stats.nitro * 15;
+        const nitroBoost = this.selectedCar.stats.nitro * 75;
 
         this.playerCar.setThrottle(this.baseSpeed + nitroBoost);
 
@@ -219,7 +220,7 @@ export class GameEngine {
         if (!this.playerCar) return;
 
         this.nitroActive = false;
-        this.playerCar.setThrottle(this.baseSpeed);
+        this.playerCar.setThrottle(this.isDriving ? this.baseSpeed : 0);
         this.nitroTimer = null;
     }
 
@@ -229,6 +230,7 @@ export class GameEngine {
         switch (e.key) {
             case "ArrowUp":
                 this.playerCar.setThrottle(this.baseSpeed);
+                this.isDriving = true;
 
                 this.updateEngineSound(1.0);
                 break;
@@ -278,6 +280,8 @@ export class GameEngine {
             case "ArrowUp":
             case "ArrowDown":
                 this.playerCar.setThrottle(0);
+
+                this.isDriving = false;
 
                 this.updateEngineSound(0.2);
                 break;
