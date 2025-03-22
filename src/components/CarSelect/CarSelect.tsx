@@ -1,44 +1,42 @@
-import { useState, useEffect } from "react";
-import { useGame } from "../../context/GameContext";
-import "./CarSelect.scss";
+import { useState, useEffect } from "react"
+import { useGame } from "../../context/GameContext"
+import "./CarSelect.scss"
 
 interface CarStats {
-    speed: number;
-    nitro: number;
-    drive: string;
+    speed: number
+    nitro: number
+    drive: string
 }
 
 interface Car {
-    id: number;
-    image: string;
-    name: string;
-    price: number;
-    owned: boolean;
-    stats: CarStats;
-    color?: string;
+    id: number
+    image: string
+    name: string
+    price: number
+    owned: boolean
+    stats: CarStats
+    color?: string
 }
 
 const CarSelect = () => {
-    const { selectCar, setGameState } = useGame();
-    const [cars, setCars] = useState<Car[]>([]);
-    const [index, setIndex] = useState(0);
-    const [currentCar, setCurrentCar] = useState<Car | null>(null);
-    const [budget, setBudget] = useState(200);
-    const [showEditScreen, setShowEditScreen] = useState(false);
+    const { selectCar, setGameState } = useGame()
+    const [cars, setCars] = useState<Car[]>([])
+    const [index, setIndex] = useState(0)
+    const [currentCar, setCurrentCar] = useState<Car | null>(null)
+    const [budget, setBudget] = useState(200)
+    const [showEditScreen, setShowEditScreen] = useState(false)
 
-    const [speedUpgrades, setSpeedUpgrades] = useState(0);
-    const [nitroUpgrades, setNitroUpgrades] = useState(0);
-    const [totalCost, setTotalCost] = useState(0);
-
+    const [speedUpgrades, setSpeedUpgrades] = useState(0)
+    const [nitroUpgrades, setNitroUpgrades] = useState(0)
+    const [totalCost, setTotalCost] = useState(0)
 
     useEffect(() => {
-        const savedCars = localStorage.getItem("cars");
-        const savedBudget = localStorage.getItem("budget");
+        const savedCars = localStorage.getItem("cars")
+        const savedBudget = localStorage.getItem("budget")
 
         if (savedCars) {
-            setCars(JSON.parse(savedCars));
+            setCars(JSON.parse(savedCars))
         } else {
-
             const initialCars = [
                 {
                     id: 0,
@@ -76,136 +74,133 @@ const CarSelect = () => {
                         drive: "4WD",
                     },
                 },
-            ];
-            setCars(initialCars);
-            localStorage.setItem("cars", JSON.stringify(initialCars));
+            ]
+            setCars(initialCars)
+            localStorage.setItem("cars", JSON.stringify(initialCars))
         }
 
         if (savedBudget) {
-            setBudget(parseInt(savedBudget));
+            setBudget(parseInt(savedBudget))
         } else {
-            localStorage.setItem("budget", budget.toString());
+            localStorage.setItem("budget", budget.toString())
         }
-    }, []);
-
+    }, [])
 
     useEffect(() => {
         if (cars.length > 0) {
-            localStorage.setItem("cars", JSON.stringify(cars));
+            localStorage.setItem("cars", JSON.stringify(cars))
         }
-        localStorage.setItem("budget", budget.toString());
-    }, [cars, budget]);
+        localStorage.setItem("budget", budget.toString())
+    }, [cars, budget])
 
-    const pages = [...cars, ...cars, ...cars];
+    const pages = [...cars, ...cars, ...cars]
 
     useEffect(() => {
         if (cars.length > 0) {
-            const realCarIndex = index % cars.length;
-            setCurrentCar(cars[realCarIndex]);
+            const realCarIndex = index % cars.length
+            setCurrentCar(cars[realCarIndex])
         }
-    }, [index, cars]);
+    }, [index, cars])
 
     useEffect(() => {
         if (showEditScreen && currentCar) {
-            setSpeedUpgrades(0);
-            setNitroUpgrades(0);
-            setTotalCost(0);
+            setSpeedUpgrades(0)
+            setNitroUpgrades(0)
+            setTotalCost(0)
         }
-    }, [showEditScreen, currentCar]);
+    }, [showEditScreen, currentCar])
 
     const nextSlide = () => {
-        setIndex((prev) => (prev + 1) % pages.length);
-    };
+        setIndex((prev) => (prev + 1) % pages.length)
+    }
 
     const prevSlide = () => {
-        setIndex((prev) => (prev - 1 + pages.length) % pages.length);
-    };
+        setIndex((prev) => (prev - 1 + pages.length) % pages.length)
+    }
 
     const renderStars = (value: number, maxStars: number = 5) => {
         return Array.from({ length: maxStars }).map((_, i) => (
             <div key={i} className={`star ${i < value ? "active" : ""}`}></div>
-        ));
-    };
+        ))
+    }
 
     const handlePurchase = () => {
-        if (!currentCar) return;
+        if (!currentCar) return
 
-        const realCarIndex = index % cars.length;
-        const carToBuy = cars[realCarIndex];
+        const realCarIndex = index % cars.length
+        const carToBuy = cars[realCarIndex]
 
         if (carToBuy.owned) {
-            return;
+            return
         }
 
         if (budget >= carToBuy.price) {
-            setBudget((prev) => prev - carToBuy.price);
+            setBudget((prev) => prev - carToBuy.price)
 
-            const updatedCars = [...cars];
+            const updatedCars = [...cars]
             updatedCars[realCarIndex] = {
                 ...carToBuy,
                 owned: true,
-            };
+            }
 
-            setCars(updatedCars);
+            setCars(updatedCars)
         }
-    };
+    }
 
     const handleEditClick = () => {
-        setShowEditScreen(true);
-    };
+        setShowEditScreen(true)
+    }
 
     const handleBackClick = () => {
-        setShowEditScreen(false);
-    };
+        setShowEditScreen(false)
+    }
 
     const handleSpeedUpgrade = () => {
-        if (!currentCar) return;
+        if (!currentCar) return
 
         if (
             currentCar.stats.speed + speedUpgrades < 5 &&
             budget >= totalCost + 200
         ) {
-            setSpeedUpgrades((prev) => prev + 1);
-            setTotalCost((prev) => prev + 200);
+            setSpeedUpgrades((prev) => prev + 1)
+            setTotalCost((prev) => prev + 200)
         }
-    };
+    }
 
     const handleNitroUpgrade = () => {
-        if (!currentCar) return;
+        if (!currentCar) return
 
         if (
             currentCar.stats.nitro + nitroUpgrades < 5 &&
             budget >= totalCost + 200
         ) {
-            setNitroUpgrades((prev) => prev + 1);
-            setTotalCost((prev) => prev + 200);
+            setNitroUpgrades((prev) => prev + 1)
+            setTotalCost((prev) => prev + 200)
         }
-    };
+    }
 
     const handlePlayClick = () => {
-        if (!currentCar || !currentCar.owned) return;
-
+        if (!currentCar || !currentCar.owned) return
 
         selectCar({
             id: currentCar.id,
             name: currentCar.name,
             image: currentCar.image,
             stats: currentCar.stats,
-            color: currentCar.color
-        });
+            color: currentCar.color,
+        })
 
-
-        setGameState('MAP_SELECT');
-    };
+        setGameState("MAP_SELECT")
+    }
 
     const handlePayment = () => {
-        if (!currentCar) return;
+        if (!currentCar) return
 
         if (totalCost > 0 && budget >= totalCost) {
-            setBudget((prev) => prev - totalCost);
+            setBudget((prev) => prev - totalCost)
 
-            const realCarIndex = index % cars.length;
-            const updatedCars = [...cars];
+            const realCarIndex = index % cars.length
+            const updatedCars = [...cars]
             updatedCars[realCarIndex] = {
                 ...currentCar,
                 stats: {
@@ -213,33 +208,35 @@ const CarSelect = () => {
                     speed: currentCar.stats.speed + speedUpgrades,
                     nitro: currentCar.stats.nitro + nitroUpgrades,
                 },
-            };
+            }
 
-            setCars(updatedCars);
-            setShowEditScreen(false);
+            setCars(updatedCars)
+            setShowEditScreen(false)
         }
-    };
-
+    }
 
     const handleColorSelect = (color: string) => {
-        if (!currentCar) return;
+        if (!currentCar) return
 
-        const realCarIndex = index % cars.length;
-        const updatedCars = [...cars];
+        const realCarIndex = index % cars.length
+        const updatedCars = [...cars]
         updatedCars[realCarIndex] = {
             ...currentCar,
             color: color,
-        };
+        }
 
-        setCars(updatedCars);
-    };
+        setCars(updatedCars)
+    }
 
-    if (!currentCar) return <div>Loading...</div>;
+    if (!currentCar) return <div>Loading...</div>
 
     return (
         <>
-            <section style={{ display: showEditScreen ? "none" : "block" }}>
-                <header>
+            <section
+                className="car-select-sec"
+                style={{ display: showEditScreen ? "none" : "block" }}
+            >
+                <header className="car-select-header">
                     <div className="container">
                         <div className="arrow"></div>
                         <h2>Wybierz swoj pojazd</h2>
@@ -277,33 +274,33 @@ const CarSelect = () => {
                     <div className="carousel-wrapper">
                         {pages.map((page, i) => {
                             const position =
-                                (i - index + pages.length) % pages.length;
-                            const isActive = position === 0;
-                            const scale = isActive ? 1 : 0.7;
+                                (i - index + pages.length) % pages.length
+                            const isActive = position === 0
+                            const scale = isActive ? 1 : 0.7
                             const opacity =
                                 position > 1 && position < pages.length - 1
                                     ? 0
                                     : isActive
-                                        ? 1
-                                        : 0.6;
+                                      ? 1
+                                      : 0.6
 
                             const xOffset = (() => {
                                 if (position === pages.length - 1) {
-                                    return `-100%`;
+                                    return `-100%`
                                 }
                                 if (position > pages.length / 2) {
-                                    return `-200%`;
+                                    return `-200%`
                                 }
 
                                 if (position === 0) {
-                                    return "0%";
+                                    return "0%"
                                 }
 
                                 if (position === 1) {
-                                    return "100%";
+                                    return "100%"
                                 }
-                                return "200%";
-                            })();
+                                return "200%"
+                            })()
 
                             return (
                                 <div
@@ -323,7 +320,7 @@ const CarSelect = () => {
                                         // }}
                                     />
                                 </div>
-                            );
+                            )
                         })}
                     </div>
 
@@ -382,7 +379,9 @@ const CarSelect = () => {
                                 alt={currentCar.name}
                                 className="carousel-image"
                                 style={{
-                                    filter: currentCar.color ? `hue-rotate(${getHueRotateValue(currentCar.color)})` : 'none'
+                                    filter: currentCar.color
+                                        ? `hue-rotate(${getHueRotateValue(currentCar.color)})`
+                                        : "none",
                                 }}
                             />
                         </div>
@@ -391,12 +390,12 @@ const CarSelect = () => {
                                 <p>Ulepsz Predkosc</p>
                                 <div className="wrapper">
                                     {Array.from({ length: 5 }).map((_, i) => {
-                                        const baseSpeed = currentCar.stats.speed;
+                                        const baseSpeed = currentCar.stats.speed
                                         const isActive =
-                                            i < baseSpeed + speedUpgrades;
+                                            i < baseSpeed + speedUpgrades
                                         const isPurchasable =
                                             i === baseSpeed + speedUpgrades &&
-                                            i < 5;
+                                            i < 5
 
                                         return (
                                             <div
@@ -408,7 +407,7 @@ const CarSelect = () => {
                                                         : undefined
                                                 }
                                             ></div>
-                                        );
+                                        )
                                     })}
                                 </div>
                             </div>
@@ -416,12 +415,12 @@ const CarSelect = () => {
                                 <p>Ulepsz Nitro</p>
                                 <div className="wrapper">
                                     {Array.from({ length: 5 }).map((_, i) => {
-                                        const baseNitro = currentCar.stats.nitro;
+                                        const baseNitro = currentCar.stats.nitro
                                         const isActive =
-                                            i < baseNitro + nitroUpgrades;
+                                            i < baseNitro + nitroUpgrades
                                         const isPurchasable =
                                             i === baseNitro + nitroUpgrades &&
-                                            i < 5;
+                                            i < 5
 
                                         return (
                                             <div
@@ -433,7 +432,7 @@ const CarSelect = () => {
                                                         : undefined
                                                 }
                                             ></div>
-                                        );
+                                        )
                                     })}
                                 </div>
                             </div>
@@ -446,11 +445,15 @@ const CarSelect = () => {
                                     ></div>
                                     <div
                                         className={`color blue ${currentCar.color === "blue" ? "active" : ""}`}
-                                        onClick={() => handleColorSelect("blue")}
+                                        onClick={() =>
+                                            handleColorSelect("blue")
+                                        }
                                     ></div>
                                     <div
                                         className={`color yellow ${currentCar.color === "yellow" ? "active" : ""}`}
-                                        onClick={() => handleColorSelect("yellow")}
+                                        onClick={() =>
+                                            handleColorSelect("yellow")
+                                        }
                                     ></div>
                                 </div>
                             </div>
@@ -466,21 +469,20 @@ const CarSelect = () => {
                 </div>
             </div>
         </>
-    );
-};
-
+    )
+}
 
 function getHueRotateValue(color: string): string {
     switch (color) {
         case "red":
-            return "0deg";
+            return "0deg"
         case "blue":
-            return "180deg";
+            return "180deg"
         case "yellow":
-            return "60deg";
+            return "60deg"
         default:
-            return "0deg";
+            return "0deg"
     }
 }
 
-export default CarSelect;
+export default CarSelect

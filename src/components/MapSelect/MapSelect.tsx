@@ -1,23 +1,22 @@
-import { useState, useEffect } from "react";
-import { useGame } from "../../context/GameContext";
-import "./mapselect.scss";
+import { useState, useEffect } from "react"
+import { useGame } from "../../context/GameContext"
+import "./mapselect.scss"
 
 interface TrackData {
-    id: string;
-    name: string;
-    description: string;
-    difficulty: "easy" | "medium" | "hard";
-    imageSrc: string;
-    mapPath: string;
-    bestTime: number | null;
+    id: string
+    name: string
+    description: string
+    difficulty: "easy" | "medium" | "hard"
+    imageSrc: string
+    mapPath: string
+    bestTime: number | null
 }
 
 function MapSelect() {
-    const { startGame } = useGame();
-    const [selectedTrack, setSelectedTrack] = useState<TrackData | null>(null);
-    const [tracks, setTracks] = useState<TrackData[]>([]);
+    const { startGame } = useGame()
+    const [selectedTrack, setSelectedTrack] = useState<TrackData | null>(null)
+    const [tracks, setTracks] = useState<TrackData[]>([])
 
-    
     useEffect(() => {
         const initialTracks: TrackData[] = [
             {
@@ -27,7 +26,7 @@ function MapSelect() {
                 difficulty: "easy",
                 imageSrc: "/tracks/easy_track.jpg",
                 mapPath: "tracks/race-track01.json",
-                bestTime: null
+                bestTime: null,
             },
             {
                 id: "track2",
@@ -36,7 +35,7 @@ function MapSelect() {
                 difficulty: "medium",
                 imageSrc: "/tracks/medium_track.jpg",
                 mapPath: "src/assets/race-track02.json",
-                bestTime: null
+                bestTime: null,
             },
             {
                 id: "track3",
@@ -45,53 +44,49 @@ function MapSelect() {
                 difficulty: "hard",
                 imageSrc: "/tracks/hard_track.jpg",
                 mapPath: "src/assets/race-track03.json",
-                bestTime: null
-            }
-        ];
+                bestTime: null,
+            },
+        ]
 
-        
-        const savedTimes = localStorage.getItem("trackBestTimes");
+        const savedTimes = localStorage.getItem("trackBestTimes")
         if (savedTimes) {
-            const parsedTimes = JSON.parse(savedTimes);
+            const parsedTimes = JSON.parse(savedTimes)
 
-            initialTracks.forEach(track => {
+            initialTracks.forEach((track) => {
                 if (parsedTimes[track.id]) {
-                    track.bestTime = parsedTimes[track.id];
+                    track.bestTime = parsedTimes[track.id]
                 }
-            });
+            })
         }
 
-        setTracks(initialTracks);
-        setSelectedTrack(initialTracks[0]); 
-    }, []);
+        setTracks(initialTracks)
+        setSelectedTrack(initialTracks[0])
+    }, [])
 
     const handleSelectTrack = (track: TrackData) => {
-        setSelectedTrack(track);
-    };
+        setSelectedTrack(track)
+    }
 
     const handleStartRace = async () => {
-        if (!selectedTrack) return;
-
+        if (!selectedTrack) return
         try {
-            
-            await startGame(selectedTrack.mapPath);
+            await startGame(selectedTrack.mapPath)
         } catch (error) {
-            console.error("Failed to start race:", error);
+            console.error("Failed to start race:", error)
         }
-    };
+    }
 
     const formatTime = (timeInMs: number | null): string => {
-        if (timeInMs === null) return "--.-s";
+        if (timeInMs === null) return "--.-s"
 
-        const seconds = timeInMs / 1000;
-        return seconds.toFixed(2) + "s";
-    };
+        const seconds = timeInMs / 1000
+        return seconds.toFixed(2) + "s"
+    }
 
     const handleGoBack = () => {
-        
-        const { setGameState } = useGame();
-        setGameState('CAR_SELECT');
-    };
+        const { setGameState } = useGame()
+        setGameState("CAR_SELECT")
+    }
 
     return (
         <section className="map-select">
@@ -106,11 +101,16 @@ function MapSelect() {
                         alt={selectedTrack?.name || ""}
                     />
                     <p>
-                        Najlepszy czas: <span id="best">{selectedTrack ? formatTime(selectedTrack.bestTime) : "--.-s"}</span>
+                        Najlepszy czas:{" "}
+                        <span id="best">
+                            {selectedTrack
+                                ? formatTime(selectedTrack.bestTime)
+                                : "--.-s"}
+                        </span>
                     </p>
                 </div>
                 <div className="buttons-container">
-                    {tracks.map(track => (
+                    {tracks.map((track) => (
                         <div
                             key={track.id}
                             className={`${track.difficulty} ${selectedTrack?.id === track.id ? "selected" : ""}`}
@@ -130,7 +130,7 @@ function MapSelect() {
                 Wybierz
             </button>
         </section>
-    );
+    )
 }
 
-export default MapSelect;
+export default MapSelect

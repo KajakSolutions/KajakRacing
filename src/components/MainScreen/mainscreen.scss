@@ -33,6 +33,7 @@ main {
         &:hover {
             background: color.adjust($color: $primary, $lightness: -10%);
         }
+
         &:active {
             transform: translateY(4px);
         }

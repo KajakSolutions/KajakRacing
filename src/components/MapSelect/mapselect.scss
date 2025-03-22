@@ -3,10 +3,15 @@
 
 .map-select {
     color: $text;
-    padding: 25px;
+    background: url("/public/background.png") no-repeat;
+    background-size: cover;
 
     header {
         width: 100%;
+        padding: 40px;
+        @include MobileVH(825px) {
+            padding: 20px;
+        }
         display: flex;
         align-items: center;
 
@@ -28,8 +33,11 @@
     }
 
     main {
-        margin: 50px 0;
-        height: 65svh;
+        margin: 0px;
+        width: 100svw;
+        height: 100%;
+        padding: 2%;
+        background: none;
         @include FlexCenter(row);
 
         div {
@@ -92,6 +100,12 @@
         height: 80px;
         margin-left: calc(50% - 162.5px);
         font-size: 34px;
+        @include MobileVH(750px) {
+            width: 300px;
+            height: 50px;
+            margin-left: calc(50% - 162.5px);
+            font-size: 27.5px;
+        }
         font-family: "Press Start 2P", monospace;
         background: $primary;
         color: white;
