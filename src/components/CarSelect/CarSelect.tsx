@@ -346,7 +346,7 @@ const CarSelect = () => {
                                         }}
                                     />
                                     <div className={`${page.owned ? "unlocked" : "carLocked"}`}>
-                                        <img src="\public\lock.png"/>
+                                        <img src="/public/lock.png" alt="lock"/>
                                         <p>$100</p>
                                     </div>
                                 </div>
