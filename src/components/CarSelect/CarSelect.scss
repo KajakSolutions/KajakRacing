@@ -1,13 +1,10 @@
 @use "sass:color";
 @use "/src/variables" as *;
 
-body {
-    background: url(/public/background.png);
-    background-repeat: no-repeat;
-    background-size: cover;
-}
 
 section.car-select-sec {
+    background: url("/public/background.png") no-repeat;
+    background-size: cover;
     height: 100svh;
     width: 100svw;
 
@@ -136,23 +133,25 @@ section.car-select-sec {
             }
 
             &.not-owned {
-                img {
+                .carousel-image{
                     filter: grayscale(100%) brightness(0.35);
                 }
-
-                &::after {
-                    content: "$100";
-                    position: absolute;
-                    font-size: 72px;
-                    color: $text;
-                    border-radius: 50%;
-                    padding: 5px;
-                    width: 40px;
-                    height: 40px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
+            }
+            .carLocked{
+                position: absolute;
+                font-size: 72px;
+                color: $text;
+                border-radius: 50%;
+                padding: 5px;
+                width: 1px;
+                height: 1px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            .unlocked{
+                display: none;
             }
         }
 
@@ -214,7 +213,7 @@ section.car-select-sec {
         @include FlexCenter(row);
 
         button {
-            margin: 25px;
+            margin: 0px 25px 0px 25px;
             padding: 0px 25px;
             height: 75px;
             font-size: 36px;
@@ -321,20 +320,43 @@ header.car-select-header {
         border: rgba(255, 255, 255, 0.035) 1px solid;
         @include FlexCenter(column);
 
+
         header {
+            width: 100%;
+            color: $text;
             padding: 20px 50px;
             height: 15%;
-
-            .arrow {
-                font-size: 40px;
+        
+            @include FlexCenter(row);
+            justify-content: space-between;
+        
+            .container {
+                @include FlexCenter(row);
+        
+                .arrow {
+                    width: 75px;
+                    height: 75px;
+                    margin-right: 50px;
+                    background: url("/public/long-arrow.png") no-repeat;
+                    background-size: cover;
+        
+                    &:hover {
+                        transform: translateX(-6px);
+                    }
+                }
+        
+                h2 {
+                    font-size: 44px;
+                }
             }
-
-            h2 {
-                font-size: 37.5px;
-            }
-
+        
             .budget {
-                font-size: 37.5px;
+                font-size: 44px;
+                font-weight: bold;
+        
+                @include MobileVH(860px) {
+                    font-size: 37px;
+                }
             }
         }
 
@@ -347,9 +369,14 @@ header.car-select-header {
 
             .car-container {
                 // border: 1px dotted red;
-                height: 100%;
-                width: 57.5%;
+                width: 55%;
+                height: 500px;
                 @include FlexCenter(column);
+                .car-image {
+                    height: 100%;
+                    object-fit: contain;
+                    object-position: center;
+                }
             }
 
             .settings-container {
@@ -368,6 +395,63 @@ header.car-select-header {
 
                         @include MobileVH(650px) {
                             margin: 10px 0px 0px 0px;
+                        }
+                    }
+
+                    .colors{
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                      
+                        .color {
+                            margin: 10px 2.5px 10px 2.5px;
+                            width: 40px;
+                            height: 40px;
+                            border: 1px dashed solid;
+                            cursor: pointer;
+                            transition: all 0.2s ease;
+                        
+                            &:hover {
+                                transform: scale(1.1);
+                            }
+                            
+                            &.active {
+                                background-color: #555;
+                            }
+                            
+                            &.red {
+                                background-color: #ff3b30;
+                            }
+                            
+                            &.blue {
+                                background-color: #007aff;
+                            }
+                            
+                            &.yellow {
+                                background-color: #ffcc00;
+                            }
+                        }
+                      
+                        .color-unlock {
+                            margin: 10px 2.5px 10px 2.5px;
+                            width: 100%;
+                            height: 40px;
+                            background-color: #555;
+                            color: white;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 14px;
+                            cursor: pointer;
+                            transition: background-color 0.2s ease;
+                            
+                            &:hover {
+                            background-color: #888;
+                            }
+                            
+                            &.active {
+                            background-color: $primary;
+                            }
                         }
                     }
 
@@ -407,29 +491,6 @@ header.car-select-header {
                                     translateY(3px);
                             }
                         }
-
-                        .color {
-                            height: 30px;
-                            width: 30px;
-                            border: 2px gray solid;
-                            border-radius: 3px;
-
-                            &:active {
-                                transform: translateY(3px);
-                            }
-                        }
-
-                        .red {
-                            background: red;
-                        }
-
-                        .blue {
-                            background: blue;
-                        }
-
-                        .yellow {
-                            background: yellow;
-                        }
                     }
                 }
             }
@@ -457,7 +518,7 @@ header.car-select-header {
             text-transform: uppercase;
             color: $text;
             border: none;
-
+            
             &:hover:not(.disabled) {
                 background: color.adjust($color: $primary, $lightness: -10%);
                 box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -466,6 +527,7 @@ header.car-select-header {
             &:active:not(.disabled) {
                 transform: translateY(4px);
             }
+            
         }
     }
 }

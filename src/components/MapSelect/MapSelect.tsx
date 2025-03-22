@@ -13,7 +13,8 @@ interface TrackData {
 }
 
 function MapSelect() {
-    const { startGame } = useGame()
+
+    const { startGame, setGameState } = useGame()
     const [selectedTrack, setSelectedTrack] = useState<TrackData | null>(null)
     const [tracks, setTracks] = useState<TrackData[]>([])
 
@@ -24,7 +25,7 @@ function MapSelect() {
                 name: "Latwy",
                 description: "dzielnicowa zadymka",
                 difficulty: "easy",
-                imageSrc: "/tracks/easy_track.jpg",
+                imageSrc: "/tracks/mapa1.png",
                 mapPath: "tracks/race-track01.json",
                 bestTime: null,
             },
@@ -33,7 +34,7 @@ function MapSelect() {
                 name: "Sredni",
                 description: "blokowy torpedowiec",
                 difficulty: "medium",
-                imageSrc: "/tracks/medium_track.jpg",
+                imageSrc: "/tracks/mapa2.png",
                 mapPath: "src/assets/race-track02.json",
                 bestTime: null,
             },
@@ -42,7 +43,7 @@ function MapSelect() {
                 name: "Trudny",
                 description: "lodowa banda",
                 difficulty: "hard",
-                imageSrc: "/tracks/hard_track.jpg",
+                imageSrc: "/tracks/mapa3.png",
                 mapPath: "src/assets/race-track03.json",
                 bestTime: null,
             },
@@ -83,15 +84,14 @@ function MapSelect() {
         return seconds.toFixed(2) + "s"
     }
 
-    const handleGoBack = () => {
-        const { setGameState } = useGame()
+    const handleLastPageClick = () => {
         setGameState("CAR_SELECT")
     }
 
     return (
         <section className="map-select">
             <header>
-                <div className="arrow" onClick={handleGoBack}></div>
+                <div className="arrow" onClick={handleLastPageClick}></div>
                 <h2>Wybierz poziom:</h2>
             </header>
             <main>
@@ -120,15 +120,17 @@ function MapSelect() {
                             <p>{track.description}</p>
                         </div>
                     ))}
-                </div>
+                </div>               
             </main>
-            <button
-                id="MapSelect"
-                onClick={handleStartRace}
-                disabled={!selectedTrack}
-            >
+            <div className="button-select">
+                <button
+                    id="MapSelect"
+                    onClick={handleStartRace}
+                    disabled={!selectedTrack}
+                >
                 Wybierz
-            </button>
+                </button>
+            </div>
         </section>
     )
 }

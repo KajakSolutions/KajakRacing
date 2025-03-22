@@ -16,6 +16,7 @@ interface Car {
     owned: boolean
     stats: CarStats
     color?: string
+    colorUnlocked?: boolean
 }
 
 const CarSelect = () => {
@@ -23,11 +24,12 @@ const CarSelect = () => {
     const [cars, setCars] = useState<Car[]>([])
     const [index, setIndex] = useState(0)
     const [currentCar, setCurrentCar] = useState<Car | null>(null)
-    const [budget, setBudget] = useState(200)
+    const [budget, setBudget] = useState(20000)
     const [showEditScreen, setShowEditScreen] = useState(false)
 
     const [speedUpgrades, setSpeedUpgrades] = useState(0)
     const [nitroUpgrades, setNitroUpgrades] = useState(0)
+    const [colorUpgrade, setColorUpgrade] = useState(false)
     const [totalCost, setTotalCost] = useState(0)
 
     useEffect(() => {
@@ -44,6 +46,7 @@ const CarSelect = () => {
                     name: "BMW E36",
                     price: 100,
                     owned: false,
+                    colorUnlocked: false,
                     stats: {
                         speed: 3,
                         nitro: 3,
@@ -56,6 +59,7 @@ const CarSelect = () => {
                     name: "Saab 93",
                     price: 0,
                     owned: true,
+                    colorUnlocked: false,
                     stats: {
                         speed: 2,
                         nitro: 4,
@@ -68,6 +72,7 @@ const CarSelect = () => {
                     name: "Nissan GTR",
                     price: 100,
                     owned: false,
+                    colorUnlocked: false,
                     stats: {
                         speed: 3,
                         nitro: 2,
@@ -106,6 +111,7 @@ const CarSelect = () => {
         if (showEditScreen && currentCar) {
             setSpeedUpgrades(0)
             setNitroUpgrades(0)
+            setColorUpgrade(false)
             setTotalCost(0)
         }
     }, [showEditScreen, currentCar])
@@ -151,6 +157,10 @@ const CarSelect = () => {
         setShowEditScreen(true)
     }
 
+    const handleLastPageClick = () => {
+        setGameState("MAIN_MENU")
+    }
+
     const handleBackClick = () => {
         setShowEditScreen(false)
     }
@@ -179,6 +189,16 @@ const CarSelect = () => {
         }
     }
 
+    const handleColorUpgrade = () => {
+        if (!currentCar) return
+
+        // Only allow color upgrade if not already unlocked
+        if (!currentCar.colorUnlocked && budget >= totalCost + 50) {
+            setColorUpgrade(true)
+            setTotalCost((prev) => prev + 50)
+        }
+    }
+
     const handlePlayClick = () => {
         if (!currentCar || !currentCar.owned) return
 
@@ -195,7 +215,8 @@ const CarSelect = () => {
 
     const handlePayment = () => {
         if (!currentCar) return
-
+        // if (totalCost > 0 && budget >= totalCost) gdy zmieniasz kolor to cie nie wypierdala
+        // if (budget >= totalCost) tu wypierdala
         if (totalCost > 0 && budget >= totalCost) {
             setBudget((prev) => prev - totalCost)
 
@@ -203,6 +224,7 @@ const CarSelect = () => {
             const updatedCars = [...cars]
             updatedCars[realCarIndex] = {
                 ...currentCar,
+                colorUnlocked: currentCar.colorUnlocked || colorUpgrade,
                 stats: {
                     ...currentCar.stats,
                     speed: currentCar.stats.speed + speedUpgrades,
@@ -210,13 +232,17 @@ const CarSelect = () => {
                 },
             }
 
-            setCars(updatedCars)
-            setShowEditScreen(false)
+            if(!currentCar.colorUnlocked){
+                setCars(updatedCars)
+            }else{
+                setCars(updatedCars)
+                setShowEditScreen(false)  
+            }
         }
     }
 
     const handleColorSelect = (color: string) => {
-        if (!currentCar) return
+        if (!currentCar || !currentCar.colorUnlocked) return
 
         const realCarIndex = index % cars.length
         const updatedCars = [...cars]
@@ -238,7 +264,7 @@ const CarSelect = () => {
             >
                 <header className="car-select-header">
                     <div className="container">
-                        <div className="arrow"></div>
+                        <div className="arrow" onClick={handleLastPageClick}/>
                         <h2>Wybierz swoj pojazd</h2>
                     </div>
                     <div className="budget">${budget}</div>
@@ -315,10 +341,14 @@ const CarSelect = () => {
                                         src={page.image}
                                         alt={`${page.name}`}
                                         className="carousel-image"
-                                        // style={{
-                                        //     filter: page.color ? `hue-rotate(${getHueRotateValue(page.color)})` : 'none'
-                                        // }}
+                                         style={{
+                                             filter: page.color ? `hue-rotate(${getHueRotateValue(page.color)})` : 'grayscale(100%) brightness(0.35);'
+                                        }}
                                     />
+                                    <div className={`${page.owned ? "unlocked" : "carLocked"}`}>
+                                        <img src="\public\lock.png"/>
+                                        <p>$100</p>
+                                    </div>
                                 </div>
                             )
                         })}
@@ -377,7 +407,7 @@ const CarSelect = () => {
                             <img
                                 src={currentCar.image}
                                 alt={currentCar.name}
-                                className="carousel-image"
+                                className="car-image"
                                 style={{
                                     filter: currentCar.color
                                         ? `hue-rotate(${getHueRotateValue(currentCar.color)})`
@@ -438,23 +468,30 @@ const CarSelect = () => {
                             </div>
                             <div className="color-container">
                                 <p>Zmien Kolor</p>
-                                <div className="wrapper">
-                                    <div
-                                        className={`color red ${currentCar.color === "red" ? "active" : ""}`}
-                                        onClick={() => handleColorSelect("red")}
-                                    ></div>
-                                    <div
-                                        className={`color blue ${currentCar.color === "blue" ? "active" : ""}`}
-                                        onClick={() =>
-                                            handleColorSelect("blue")
-                                        }
-                                    ></div>
-                                    <div
-                                        className={`color yellow ${currentCar.color === "yellow" ? "active" : ""}`}
-                                        onClick={() =>
-                                            handleColorSelect("yellow")
-                                        }
-                                    ></div>
+                                <div className="colors">
+                                    {currentCar.colorUnlocked || colorUpgrade ? (
+                                        <>
+                                            <div
+                                                className={`color ${currentCar.color === "red" ? "active" : "red"}`}
+                                                onClick={() => handleColorSelect("red")}
+                                            ></div>
+                                            <div
+                                                className={`color ${currentCar.color === "blue" ? "active" : "blue"}`}
+                                                onClick={() => handleColorSelect("blue")}
+                                            ></div>
+                                            <div
+                                                className={`color ${currentCar.color === "yellow" ? "active" : "yellow"}`}
+                                                onClick={() => handleColorSelect("yellow")}
+                                            ></div>
+                                        </>
+                                    ) : (
+                                        <div 
+                                            className={`color-unlock ${colorUpgrade ? "active" : ""}`}
+                                            onClick={handleColorUpgrade}
+                                        >
+                                            ($50)
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
