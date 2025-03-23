@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useGame } from "../../context/GameContext";
 import "./HUD.scss";
@@ -15,7 +14,6 @@ const HUD = () => {
         pauseGame
     } = useGame();
 
-    
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.code === "Space") {
@@ -32,7 +30,6 @@ const HUD = () => {
         };
     }, [activateNitro, pauseGame]);
 
-    
     const formatTime = (timeInMs: number | null): string => {
         if (timeInMs === null) return "--:--.--";
 
@@ -46,39 +43,53 @@ const HUD = () => {
 
     return (
         <div className="hud">
+            {/* Top HUD elements */}
             <div className="hud-top">
                 <div className="position-indicator">
                     <span className="label">POS</span>
-                    <span className="value">{currentPosition || '-'}</span>
+                    <span className="value">{currentPosition || '1'}</span>
                 </div>
 
                 <div className="lap-indicator">
                     <span className="label">LAP</span>
-                    <span className="value">{currentLap || '-'}/{totalLaps || '-'}</span>
+                    <span className="value">{currentLap || '1'}/{totalLaps || '3'}</span>
                 </div>
             </div>
 
+            {/* Bottom HUD elements */}
             <div className="hud-bottom">
                 <div className="time-display">
-                    <div className="last-lap">
-                        <span className="label">LAST LAP</span>
+                    <div className="lap-time">
+                        <span className="label">LAST LAP:</span>
                         <span className="value">{formatTime(lastLapTime)}</span>
                     </div>
-
-                    <div className="best-lap">
-                        <span className="label">BEST LAP</span>
+                    <div className="lap-time">
+                        <span className="label">BEST LAP:</span>
                         <span className="value">{formatTime(bestLapTime)}</span>
                     </div>
                 </div>
 
-                <div className={`nitro-indicator ${isNitroActive ? 'active' : ''}`}>
-                    <div className="nitro-icon"></div>
-                    <div className="nitro-bar">
-                        <div className="nitro-fill" style={{ width: isNitroActive ? '100%' : '0%' }}></div>
+                {/* Nitro indicator */}
+                <div className={"right-panel"}>
+                    <div className="fish-container">
+                        <div className="fish">
+                            <img className="fish-icon" src={"/public/fish.png"} alt={"fish"}/>
+                            <span className="value">{/*currentFish ||*/ '0'}/{/*totalFish ||*/ '3'}</span>
+                        </div>
+                    </div>
+                    <div className="nitro-container">
+                        <div className="nitro-icon">
+                            <img src={"/nitro.png"} alt={"Nitro:"}/>
+                        </div>
+                        <div className={`nitro-bar ${isNitroActive ? 'active' : ''}`}>
+                            <div className="nitro-fill" style={{ width: `100%` }}></div>
+                        </div>
                     </div>
                 </div>
+
             </div>
 
+            {/* Pause button */}
             <button className="pause-button" onClick={pauseGame}>
                 II
             </button>
