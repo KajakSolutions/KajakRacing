@@ -143,7 +143,7 @@ function PauseScreen() {
                     Powrot do gry
                 </button>
 
-                <button id="ReturnToMenu" onClick={handleMenuClick}>
+                <button className="ReturnToMenu" onClick={handleMenuClick}>
                     Powrot do menu
                 </button>
             </div>

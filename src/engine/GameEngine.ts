@@ -163,6 +163,23 @@ export class GameEngine {
         }
     }
 
+    public stop(): void {
+        if (this.engine) {
+            this.engine.stop();
+            this.setGameState('MAIN_MENU');
+
+            soundManager.stop('engine');
+
+            soundManager.stop('background_music');
+
+            this.isDriving = false;
+
+            if (this.nitroActive) {
+                this.deactivateNitro();
+            }
+        }
+    }
+
     public pause(): void {
         if (this.engine) {
             this.engine.stop();

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
 import { gameEngine, GameState, PlayerCar } from '../engine/GameEngine';
 import { RaceResults } from '@kajaksolutions/kajakengine';
 
@@ -18,6 +18,7 @@ interface GameContextData {
     lastLapTime: number | null;
     activateNitro: () => void;
     isNitroActive: boolean;
+    closeCanvas: () => void;
 }
 
 const GameContext = createContext<GameContextData>({
@@ -36,6 +37,7 @@ const GameContext = createContext<GameContextData>({
     lastLapTime: null,
     activateNitro: () => {},
     isNitroActive: false,
+    closeCanvas: () => {},
 });
 
 
@@ -54,6 +56,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     const [bestLapTime, setBestLapTime] = useState<number | null>(null);
     const [lastLapTime, setLastLapTime] = useState<number | null>(null);
     const [isNitroActive, setIsNitroActive] = useState<boolean>(false);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
 
     useEffect(() => {
@@ -117,12 +120,13 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
             canvas.style.top = '0';
             canvas.style.left = '0';
             canvas.style.zIndex = '0';
+            canvas.id = 'game-canvas';
 
+            canvasRef.current = canvas;
 
             const gameContainer = document.getElementById('game-container');
             if (gameContainer) {
                 gameContainer.appendChild(canvas);
-
 
                 await gameEngine.initialize(canvas);
             }
@@ -130,8 +134,14 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
         setupCanvas();
 
-
         return () => {
+            if (canvasRef.current) {
+                const canvas = canvasRef.current;
+                const parent = canvas.parentNode;
+                if (parent) {
+                    parent.removeChild(canvas);
+                }
+            }
             gameEngine.cleanup();
         };
     }, []);
@@ -163,10 +173,37 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
         gameEngine.activateNitro();
         setIsNitroActive(true);
 
-
         setTimeout(() => {
             setIsNitroActive(false);
         }, 3000);
+    };
+
+
+    const closeCanvas = () => {
+        if (canvasRef.current) {
+            const canvas = canvasRef.current;
+            const parent = canvas.parentNode;
+            if (parent) {
+                parent.removeChild(canvas);
+            }
+            canvasRef.current = null;
+        }
+
+        const canvasElement = document.getElementById('game-canvas');
+        if (canvasElement) {
+            const parent = canvasElement.parentNode;
+            if (parent) {
+                parent.removeChild(canvasElement);
+            }
+        }
+
+        const gameContainer = document.getElementById('game-container');
+        if (gameContainer) {
+            const canvases = gameContainer.getElementsByTagName('canvas');
+            while (canvases.length > 0) {
+                gameContainer.removeChild(canvases[0]);
+            }
+        }
     };
 
 
@@ -186,6 +223,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
         lastLapTime,
         activateNitro,
         isNitroActive,
+        closeCanvas,
     };
 
     return (

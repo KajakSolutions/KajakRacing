@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react"
 import { useGame } from "../../context/GameContext"
+import { gameEngine } from  "../../engine/GameEngine.ts"
 import raceResultsTest from "./test.tsx"
 import "./leaderboard.scss"
 
 function Leaderboard() {
     const raceResults = raceResultsTest
-    const { setGameState } = useGame()
+    const { setGameState , closeCanvas} = useGame()
+    const { stop } = gameEngine
     const [prize, setPrize] = useState(0)
 
     useEffect(() => {
@@ -70,6 +72,9 @@ function Leaderboard() {
 
     const handleReturnToMenu = () => {
         setGameState("MAIN_MENU")
+        closeCanvas()
+        console.log("klik")
+        stop()
     }
 
     const getDriverName = (carId: number, isPlayer: boolean): string => {
