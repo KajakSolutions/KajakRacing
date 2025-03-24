@@ -88,7 +88,11 @@ function Leaderboard() {
             <section className="leaderboard">
                 <div className="container">
                     <h2>Wyniki Wyscigu</h2>
-                    <p>Ładowanie wyników...</p>
+                    <p>Ładowanie wyników<span className="loading-text">
+                    <span className="dot">.</span>
+                    <span className="dot">.</span>
+                    <span className="dot">.</span>
+                </span></p>
                     <button id="ReturnToMenu" onClick={handleReturnToMenu}>
                         Powrot do menu
                     </button>

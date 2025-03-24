@@ -56,8 +56,16 @@ function PauseScreen() {
         resumeGame();
     };
 
+    // const handleMenuClick = () => {
+    //     setGameState('MAIN_MENU');
+    // };
+    //
+    //+-----------------------------------------------+
+    //| For test change!!!!                           |
+    //+-----------------------------------------------+
+    //
     const handleMenuClick = () => {
-        setGameState('MAIN_MENU');
+        setGameState('RACE_COMPLETE');
     };
 
     const toggleMusicMute = () => {

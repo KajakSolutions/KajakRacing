@@ -1,73 +1,226 @@
 @use "sass:color";
 @use "/src/variables" as *;
 
-.leaderboard section {
-    height: 100svh;
-    width: 100svw;
-    @include FlexCenter(column);
-    background: rgba(250, 250, 250, 0.1);
-    backdrop-filter: grayscale(100%);
+.leaderboard {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 
     .container {
-        width: 700px;
-        background: $primary;
-        box-shadow: 20px 20px 0 black;
-        outline: 4px $primary solid;
-        border: 3px black solid;
+        background-color: rgb(43, 46, 69, 0.7);
+        border: 2.5px dashed rgba(255, 255, 255, 0.6);
+        border-radius: 10px;
         padding: 30px;
-        @include FlexCenter(column);
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        text-align: center;
 
         h2 {
-            font-size: 40px;
-            text-align: center;
-            margin: 25px 0px 40px 0px;
+            color: #fff;
+            font-size: 28px;
+            margin-bottom: 20px;
             text-transform: uppercase;
         }
 
-        .player-container {
-            width: 100%;
-            padding: 15px 20px;
-            margin: 10px 0px;
-            @include FlexCenter(row);
-            justify-content: space-between;
+        p {
+            color: #fff;
+            font-size: 18px;
+            margin-bottom: 20px;
+            position: relative;
 
-            p {
-                font-size: 24px;
+            &:after {
+                content: "";
+                display: inline-block;
+            }
+        }
 
-                &.place {
-                    font-size: 34px;
-                }
+        .loading-text {
+            position: relative;
+            display: inline-block;
+
+            &:after {
+                content: "";
+                position: relative;
+                display: inline-block;
             }
 
-            .img {
-                height: 60px;
-                width: 90px;
-                background: url("/public/nissan-gtr.png") no-repeat;
-                background-size: contain;
+            .dot {
+                display: inline-block;
+                opacity: 0.9;
+                animation: loadingDots 1.2s infinite ease-in-out;
+
+                &:nth-child(1) {
+                    margin-left: 3px;
+                    animation-delay: 0s;
+                }
+
+                &:nth-child(2) {
+                    margin-left: -3px;
+                    animation-delay: 0.2s;
+                }
+
+                &:nth-child(3) {
+                    margin-left: -3px;
+                    animation-delay: 0.4s;
+                }
+            }
+        }
+
+        @keyframes loadingDots {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-6px);
             }
         }
 
         h3 {
-            font-size: 42px;
-            margin: 25px 0px;
+            color: #fff;
+            font-size: 22px;
+            margin: 25px 0 15px;
+
+            span {
+                color: #4CAF50;
+                font-weight: bold;
+            }
+        }
+
+        .player-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+            padding: 12px 15px;
+            border-radius: 5px;
+            color: white;
+            transition: background-color 0.3s ease;
+
+            &.player {
+                background-color: rgba(76, 175, 80, 0.2);
+                border-left: 4px solid #4CAF50;
+            }
+
+            .place {
+                font-size: 24px;
+                font-weight: bold;
+                width: 40px;
+                text-align: center;
+            }
+
+            .nick {
+                flex: 1;
+                text-align: left;
+                font-size: 18px;
+                padding-left: 15px;
+            }
+
+            .time {
+                font-family: monospace;
+                font-size: 18px;
+                padding-right: 10px;
+            }
+
+            .img {
+                width: 32px;
+                height: 32px;
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: center;
+                background-image: url("../../../public/nissan-gtr.png");
+            }
+
+            &:nth-child(2) {
+                .place {
+                    color: gold;
+                }
+            }
+
+            &:nth-child(3) {
+                .place {
+                    color: silver;
+                }
+            }
+
+            &:nth-child(4) {
+                .place {
+                    color: #cd7f32; // brązowy
+                }
+            }
         }
 
         button {
-            margin: 15px 0;
+            display: block;
             width: 100%;
-            height: 75px;
-            font-size: 26px;
-            font-family: "Press Start 2P", monospace;
-            background: $secondary;
-            color: black;
+            padding: 14px;
+            margin-top: 20px;
             border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: "Press Start 2P", monospace;
+            cursor: pointer;
+            transition: background-color 0.3s;
 
-            &:hover {
-                background: color.adjust($color: $secondary, $lightness: -10%);
+            &#ReturnToMenu {
+                background-color: #f44336;
+                color: white;
+
+                &:hover {
+                    background-color: #d32f2f;
+                }
             }
-            &:active {
-                transform: translateY(4px);
+        }
+    }
+}
+
+@media (max-width: 600px) {
+    .leaderboard .container {
+        width: 95%;
+        padding: 20px;
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .player-container {
+            padding: 8px 10px;
+
+            .place {
+                font-size: 20px;
+                width: 30px;
             }
+
+            .nick {
+                font-size: 16px;
+            }
+
+            .time {
+                font-size: 15px;
+            }
+
+            .img {
+                width: 24px;
+                height: 24px;
+            }
+        }
+
+        h3 {
+            font-size: 18px;
+            margin: 15px 0 10px;
+        }
+
+        button {
+            padding: 10px;
         }
     }
 }
