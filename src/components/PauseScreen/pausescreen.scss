@@ -1,79 +1,158 @@
 @use "sass:color";
 @use "/src/variables" as *;
 
-.pause-screen section {
-    height: 100svh;
-    width: 100svw;
-    @include FlexCenter(column);
-    background: rgba(250, 250, 250, 0.1);
-    backdrop-filter: grayscale(100%);
+.pause-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 
     .container {
-        height: 600px;
-        width: 500px;
-        background: $primary;
-        box-shadow: 20px 20px 0 black;
-        outline: 4px $primary solid;
-        border: 3px black solid;
+        background-color: rgb(43, 46, 69, 0.7);
+        border: 2.5px dashed rgba(255, 255, 255, 0.6);
+        border-radius: 10px;
         padding: 30px;
-        @include FlexCenter(column);
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        text-align: center;
 
-        div {
-            height: 30%;
-            width: 100%;
+        h2 {
+            color: #fff;
+            font-size: 28px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        .music, .sfx {
+            margin-bottom: 20px;
 
             label {
-                font-size: 32px;
+                color: #fff;
+                display: block;
+                margin-bottom: 10px;
+                font-size: 18px;
             }
 
             .inp-wrapper {
-                @include FlexCenter(row);
-                justify-content: start;
-                margin-top: 25px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
 
                 #mute {
-                    height: 60px;
-                    width: 60px;
-                    background: url("/public/mute.png") no-repeat;
-                    background-size: cover;
-                    margin-right: 25px;
+                    width: 24px;
+                    height: 24px;
+                    background-image: url("../../../public/high.png");
+                    color: white;
+                    background-size: contain;
+                    background-repeat: no-repeat;
+                    cursor: pointer;
+
+                    &.muted {
+                        background-image: url("../../../public/mute.png");
+                        color: white;
+                    }
+                    &.low {
+                        background-image: url("../../../public/low.png");
+                        color: white;
+                    }
+                    &.medium {
+                        background-image: url("../../../public/medium.png");
+                        color: white;
+                    }
+                    &.high {
+                        background-image: url("../../../public/high.png");
+                        color: white;
+                    }
                 }
 
-                input {
-                    height: 50px;
-                    width: 80%;
+                input[type="range"] {
+                    flex: 1;
+                    height: 8px;
+                    -webkit-appearance: none;
+                    appearance: none;
+                    background: #555;
+                    border-radius: 4px;
+                    outline: none;
 
-                    &::-webkit-slider-runnable-track {
-                        background: $background;
-                        height: 20px;
-                        border-radius: 8px;
-                    }
                     &::-webkit-slider-thumb {
-                        height: 50px;
-                        width: 50px;
-                        border-radius: 100px;
-                        background: $secondary;
+                        -webkit-appearance: none;
+                        appearance: none;
+                        width: 18px;
+                        height: 18px;
+                        border-radius: 50%;
+                        background: #4CAF50;
+                        cursor: pointer;
+                    }
+
+                    &::-moz-range-thumb {
+                        width: 18px;
+                        height: 18px;
+                        border-radius: 50%;
+                        background: #4CAF50;
+                        cursor: pointer;
+                        border: none;
+                    }
+
+                    &:disabled {
+                        opacity: 0.5;
+                        cursor: not-allowed;
                     }
                 }
             }
         }
 
         button {
-            margin: 15px 0;
+            display: block;
             width: 100%;
-            height: 75px;
-            font-size: 26px;
-            font-family: "Press Start 2P", monospace;
-            background: $secondary;
-            color: black;
+            padding: 12px;
+            margin-top: 20px;
             border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
 
-            &:hover {
-                background: color.adjust($color: $secondary, $lightness: -10%);
+            &.resume {
+                background-color: #4CAF50;
+                color: white;
+
+                &:hover {
+                    background-color: #3e8e41;
+                }
             }
-            &:active {
-                transform: translateY(4px);
+
+            &#ReturnToMenu {
+                background-color: #f44336;
+                color: white;
+
+                &:hover {
+                    background-color: #d32f2f;
+                }
             }
+        }
+    }
+}
+
+@media (max-width: 600px) {
+    .pause-screen .container {
+        width: 95%;
+        padding: 20px;
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px;
         }
     }
 }

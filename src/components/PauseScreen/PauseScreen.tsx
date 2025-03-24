@@ -78,7 +78,15 @@ function PauseScreen() {
                     <div className="inp-wrapper">
                         <div
                             id="mute"
-                            className={musicMuted ? "muted" : ""}
+                            className={
+                                musicMuted || musicVolume === 0
+                                    ? "muted"
+                                    : musicVolume < 30
+                                        ? "low"
+                                        : musicVolume < 75
+                                            ? "medium"
+                                            : "high"
+                            }
                             onClick={toggleMusicMute}
                         ></div>
                         <input
@@ -99,7 +107,15 @@ function PauseScreen() {
                     <div className="inp-wrapper">
                         <div
                             id="mute"
-                            className={sfxMuted ? "muted" : ""}
+                            className={
+                                sfxMuted || sfxVolume === 0
+                                    ? "muted"
+                                    : sfxVolume < 30
+                                        ? "low"
+                                        : sfxVolume < 75
+                                            ? "medium"
+                                            : "high"
+                            }
                             onClick={toggleSfxMute}
                         ></div>
                         <input

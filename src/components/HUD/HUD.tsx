@@ -71,9 +71,9 @@ const HUD = () => {
 
                 {/* Nitro indicator */}
                 <div className={"right-panel"}>
-                    <div className="fish-container">
-                        <div className="fish">
-                            <img className="fish-icon" src={"/public/fish.png"} alt={"fish"}/>
+                    <div className="banan-container">
+                        <div className="banan">
+                            <img className="banan-icon" src={"/public/banan.png"} alt={"banan"}/>
                             <span className="value">{/*currentFish ||*/ '0'}/{/*totalFish ||*/ '3'}</span>
                         </div>
                     </div>
