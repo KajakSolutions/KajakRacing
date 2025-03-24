@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
 import { useGame } from "../../context/GameContext"
+import raceResultsTest from "./test.tsx"
 import "./leaderboard.scss"
 
 function Leaderboard() {
-    const { raceResults, setGameState } = useGame()
+    const raceResults = raceResultsTest
+    const { setGameState } = useGame()
     const [prize, setPrize] = useState(0)
 
     useEffect(() => {
