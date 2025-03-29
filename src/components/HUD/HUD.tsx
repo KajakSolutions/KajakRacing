@@ -11,7 +11,13 @@ const HUD = () => {
         lastLapTime,
         isNitroActive,
         activateNitro,
-        pauseGame
+        dropBananaPeel,
+        pauseGame,
+        bananaPeels,
+        maxBananaPeels,
+        nitroAmount,
+        maxNitro,
+        toggleDebugMode
     } = useGame();
 
     useEffect(() => {
@@ -20,6 +26,10 @@ const HUD = () => {
                 activateNitro();
             } else if (e.code === "Escape") {
                 pauseGame();
+            } else if (e.code === "KeyB") {
+                dropBananaPeel();
+            } else if (e.code === "KeyD") {
+                toggleDebugMode();
             }
         };
 
@@ -28,7 +38,7 @@ const HUD = () => {
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [activateNitro, pauseGame]);
+    }, [activateNitro, pauseGame, dropBananaPeel, toggleDebugMode]);
 
     const formatTime = (timeInMs: number | null): string => {
         if (timeInMs === null) return "--:--.--";
@@ -69,24 +79,26 @@ const HUD = () => {
                     </div>
                 </div>
 
-                {/* Nitro indicator */}
-                <div className={"right-panel"}>
+                {/* Nitro and banana indicators */}
+                <div className="right-panel">
                     <div className="banan-container">
                         <div className="banan">
-                            <img className="banan-icon" src={"/public/banan.png"} alt={"banan"}/>
-                            <span className="value">{/*currentFish ||*/ '0'}/{/*totalFish ||*/ '3'}</span>
+                            <img className="banan-icon" src="/banan.png" alt="banan"/>
+                            <span className="value">{bananaPeels || '0'}/{maxBananaPeels || '3'}</span>
                         </div>
                     </div>
                     <div className="nitro-container">
                         <div className="nitro-icon">
-                            <img src={"/nitro.png"} alt={"Nitro:"}/>
+                            <img src="/nitro.png" alt="Nitro:"/>
                         </div>
                         <div className={`nitro-bar ${isNitroActive ? 'active' : ''}`}>
-                            <div className="nitro-fill" style={{ width: `100%` }}></div>
+                            <div
+                                className="nitro-fill"
+                                style={{ width: `${((nitroAmount || 0) / (maxNitro || 100)) * 100}%` }}
+                            ></div>
                         </div>
                     </div>
                 </div>
-
             </div>
 
             {/* Pause button */}

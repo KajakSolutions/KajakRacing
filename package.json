@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@kajaksolutions/kajakengine": "^0.1.6",
+    "@kajaksolutions/kajakengine": "^0.1.8",
     "framer-motion": "^12.4.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

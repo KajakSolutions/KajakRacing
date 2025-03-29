@@ -4,76 +4,44 @@ import { soundManager } from "../../utils/SoundManager";
 import "./pausescreen.scss";
 
 function PauseScreen() {
-    const { resumeGame, setGameState } = useGame();
+    const { resumeGame, exitGame } = useGame();
     const [musicVolume, setMusicVolume] = useState(50);
     const [sfxVolume, setSfxVolume] = useState(100);
-    const [musicMuted, setMusicMuted] = useState(false);
-    const [sfxMuted, setSfxMuted] = useState(false);
-
+    const [masterVolume, setMasterVolume] = useState(100);
+    const [masterMuted, setMasterMuted] = useState(false);
 
     useEffect(() => {
-        const savedSettings = localStorage.getItem("audioSettings");
-        if (savedSettings) {
-            const settings = JSON.parse(savedSettings);
-            setMusicVolume(settings.musicVolume);
-            setSfxVolume(settings.sfxVolume);
-            setMusicMuted(settings.musicMuted);
-            setSfxMuted(settings.sfxMuted);
-
-
-            applyAudioSettings(settings);
-        }
+        setMusicVolume(Math.round(soundManager.getMusicVolume() * 100));
+        setSfxVolume(Math.round(soundManager.getSfxVolume() * 100));
+        setMasterVolume(Math.round(soundManager.getMasterVolume() * 100));
+        setMasterMuted(soundManager.isMuted());
     }, []);
 
-
     useEffect(() => {
-        const settings = {
-            musicVolume,
-            sfxVolume,
-            musicMuted,
-            sfxMuted
-        };
+        soundManager.setMusicVolume(musicVolume / 100);
+        soundManager.setSfxVolume(sfxVolume / 100);
+        soundManager.setMasterVolume(masterVolume / 100);
 
-        localStorage.setItem("audioSettings", JSON.stringify(settings));
-
-
-        applyAudioSettings(settings);
-    }, [musicVolume, sfxVolume, musicMuted, sfxMuted]);
-
-    const applyAudioSettings = (settings: any) => {
-
-        soundManager.setMusicVolume(settings.musicMuted ? 0 : settings.musicVolume / 100);
-        soundManager.setSfxVolume(settings.sfxMuted ? 0 : settings.sfxVolume / 100);
-
-        if (settings.musicMuted && settings.sfxMuted) {
+        if (masterMuted) {
             soundManager.mute();
         } else {
             soundManager.unmute();
         }
-    };
+    }, [musicVolume, sfxVolume, masterVolume, masterMuted]);
 
     const handleResumeClick = () => {
+        soundManager.play('select');
         resumeGame();
     };
 
-    // const handleMenuClick = () => {
-    //     setGameState('MAIN_MENU');
-    // };
-    //
-    //+-----------------------------------------------+
-    //| For test change!!!!                           |
-    //+-----------------------------------------------+
-    //
-    const handleMenuClick = () => {
-        setGameState('RACE_COMPLETE');
+    const handleExitClick = () => {
+        soundManager.play('back');
+        exitGame();
     };
 
-    const toggleMusicMute = () => {
-        setMusicMuted(prev => !prev);
-    };
-
-    const toggleSfxMute = () => {
-        setSfxMuted(prev => !prev);
+    const toggleMasterMute = () => {
+        setMasterMuted(prev => !prev);
+        soundManager.play('click');
     };
 
     return (
@@ -81,22 +49,38 @@ function PauseScreen() {
             <div className="container">
                 <h2>Pauza</h2>
 
-                <div className="music">
-                    <label htmlFor="music">Muzyka:</label>
+                <div className="master-volume">
+                    <label htmlFor="master">Głośność:</label>
                     <div className="inp-wrapper">
                         <div
                             id="mute"
                             className={
-                                musicMuted || musicVolume === 0
+                                masterMuted || masterVolume === 0
                                     ? "muted"
-                                    : musicVolume < 30
+                                    : masterVolume < 30
                                         ? "low"
-                                        : musicVolume < 75
+                                        : masterVolume < 75
                                             ? "medium"
                                             : "high"
                             }
-                            onClick={toggleMusicMute}
+                            onClick={toggleMasterMute}
                         ></div>
+                        <input
+                            type="range"
+                            name="master"
+                            id="master"
+                            min="0"
+                            max="100"
+                            value={masterVolume}
+                            onChange={(e) => setMasterVolume(parseInt(e.target.value))}
+                            disabled={masterMuted}
+                        />
+                    </div>
+                </div>
+
+                <div className="music">
+                    <label htmlFor="music">Muzyka:</label>
+                    <div className="inp-wrapper">
                         <input
                             type="range"
                             name="music"
@@ -105,7 +89,7 @@ function PauseScreen() {
                             max="100"
                             value={musicVolume}
                             onChange={(e) => setMusicVolume(parseInt(e.target.value))}
-                            disabled={musicMuted}
+                            disabled={masterMuted}
                         />
                     </div>
                 </div>
@@ -113,19 +97,6 @@ function PauseScreen() {
                 <div className="sfx">
                     <label htmlFor="sfx">Efekty:</label>
                     <div className="inp-wrapper">
-                        <div
-                            id="mute"
-                            className={
-                                sfxMuted || sfxVolume === 0
-                                    ? "muted"
-                                    : sfxVolume < 30
-                                        ? "low"
-                                        : sfxVolume < 75
-                                            ? "medium"
-                                            : "high"
-                            }
-                            onClick={toggleSfxMute}
-                        ></div>
                         <input
                             type="range"
                             name="sfx"
@@ -134,17 +105,17 @@ function PauseScreen() {
                             max="100"
                             value={sfxVolume}
                             onChange={(e) => setSfxVolume(parseInt(e.target.value))}
-                            disabled={sfxMuted}
+                            disabled={masterMuted}
                         />
                     </div>
                 </div>
 
                 <button className="resume" onClick={handleResumeClick}>
-                    Powrot do gry
+                    Powrót do gry
                 </button>
 
-                <button className="ReturnToMenu" onClick={handleMenuClick}>
-                    Powrot do menu
+                <button className="ReturnToMenu" onClick={handleExitClick}>
+                    Powrót do menu
                 </button>
             </div>
         </section>

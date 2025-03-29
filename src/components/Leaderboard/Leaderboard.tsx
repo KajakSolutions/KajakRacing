@@ -1,84 +1,80 @@
-import { useEffect, useState } from "react"
-import { useGame } from "../../context/GameContext"
-import { gameEngine } from  "../../engine/GameEngine.ts"
-import raceResultsTest from "./test.tsx"
-import "./leaderboard.scss"
+import { useEffect, useState } from "react";
+import { useGame } from "../../context/GameContext";
+import { soundManager } from "../../utils/SoundManager";
+import "./leaderboard.scss";
 
 function Leaderboard() {
-    const raceResults = raceResultsTest
-    const { setGameState , closeCanvas} = useGame()
-    const { stop } = gameEngine
-    const [prize, setPrize] = useState(0)
+    const { exitGame, raceResults } = useGame();
+    const [prize, setPrize] = useState(0);
 
     useEffect(() => {
-        const playerResult = raceResults.find((result) => result.isPlayer)
+        const playerResult = raceResults.find((result) => result.isPlayer);
 
         if (playerResult) {
-            const position = playerResult.position
-            let prizeMoney = 0
+            const position = playerResult.position;
+            let prizeMoney = 0;
 
             switch (position) {
                 case 1:
-                    prizeMoney = 500
-                    break
+                    prizeMoney = 500;
+                    break;
                 case 2:
-                    prizeMoney = 300
-                    break
+                    prizeMoney = 300;
+                    break;
                 case 3:
-                    prizeMoney = 200
-                    break
+                    prizeMoney = 200;
+                    break;
                 case 4:
-                    prizeMoney = 100
-                    break
+                    prizeMoney = 100;
+                    break;
                 default:
-                    prizeMoney = 50
-                    break
+                    prizeMoney = 50;
+                    break;
             }
 
-            setPrize(prizeMoney)
+            setPrize(prizeMoney);
 
-            const currentBudget = localStorage.getItem("budget")
+            const currentBudget = localStorage.getItem("budget");
             if (currentBudget) {
-                const newBudget = parseInt(currentBudget) + prizeMoney
-                localStorage.setItem("budget", newBudget.toString())
+                const newBudget = parseInt(currentBudget) + prizeMoney;
+                localStorage.setItem("budget", newBudget.toString());
             }
 
-            const bestLapTime = playerResult.bestLapTime
+            const bestLapTime = playerResult.bestLapTime;
             if (bestLapTime) {
-                saveBestLapTime(bestLapTime)
+                saveBestLapTime(bestLapTime);
             }
         }
-    }, [raceResults])
+    }, [raceResults]);
 
     const saveBestLapTime = (newTime: number) => {
-        const trackId = "track1"
+        // TODO: Save best lap time for each track
+        const trackId = "track1";
 
-        const savedTimes = localStorage.getItem("trackBestTimes")
-        const bestTimes = savedTimes ? JSON.parse(savedTimes) : {}
+        const savedTimes = localStorage.getItem("trackBestTimes");
+        const bestTimes = savedTimes ? JSON.parse(savedTimes) : {};
 
         if (!bestTimes[trackId] || newTime < bestTimes[trackId]) {
-            bestTimes[trackId] = newTime
-            localStorage.setItem("trackBestTimes", JSON.stringify(bestTimes))
+            bestTimes[trackId] = newTime;
+            localStorage.setItem("trackBestTimes", JSON.stringify(bestTimes));
         }
-    }
+    };
 
     const formatTime = (timeInMs: number): string => {
-        const totalSeconds = timeInMs / 1000
-        const seconds = Math.floor(totalSeconds % 60)
-        const milliseconds = Math.floor((totalSeconds * 100) % 100)
+        const totalSeconds = timeInMs / 1000;
+        const seconds = Math.floor(totalSeconds % 60);
+        const milliseconds = Math.floor((totalSeconds * 100) % 100);
 
-        return `${seconds.toString().padStart(2, "0")}.${milliseconds.toString().padStart(2, "0")}s`
-    }
+        return `${seconds.toString().padStart(2, "0")}.${milliseconds.toString().padStart(2, "00")}s`;
+    };
 
     const handleReturnToMenu = () => {
-        setGameState("MAIN_MENU")
-        closeCanvas()
-        console.log("klik")
-        stop()
-    }
+        soundManager.play('back');
+        exitGame();
+    };
 
     const getDriverName = (carId: number, isPlayer: boolean): string => {
-        if (isPlayer) return "Gracz"
+        if (isPlayer) return "Gracz";
 
         const aiNames = [
             "Max Speed",
@@ -86,36 +82,36 @@ function Leaderboard() {
             "Diesel",
             "Hot Wheel",
             "Lightning",
-        ]
-        return aiNames[carId % aiNames.length]
-    }
+        ];
+        return aiNames[carId % aiNames.length];
+    };
 
     if (!raceResults || raceResults.length === 0) {
         return (
             <section className="leaderboard">
                 <div className="container">
-                    <h2>Wyniki Wyscigu</h2>
+                    <h2>Wyniki Wyścigu</h2>
                     <p>Ładowanie wyników<span className="loading-text">
                     <span className="dot">.</span>
                     <span className="dot">.</span>
                     <span className="dot">.</span>
                 </span></p>
                     <button id="ReturnToMenu" onClick={handleReturnToMenu}>
-                        Powrot do menu
+                        Powrót do menu
                     </button>
                 </div>
             </section>
-        )
+        );
     }
 
     const sortedResults = [...raceResults].sort(
         (a, b) => a.position - b.position
-    )
+    );
 
     return (
         <section className="leaderboard">
             <div className="container">
-                <h2>Wyniki Wyscigu</h2>
+                <h2>Wyniki Wyścigu</h2>
 
                 {sortedResults.map((result, index) => (
                     <div
@@ -136,11 +132,11 @@ function Leaderboard() {
                 </h3>
 
                 <button id="ReturnToMenu" onClick={handleReturnToMenu}>
-                    Powrot do menu
+                    Powrót do menu
                 </button>
             </div>
         </section>
-    )
+    );
 }
 
-export default Leaderboard
+export default Leaderboard;

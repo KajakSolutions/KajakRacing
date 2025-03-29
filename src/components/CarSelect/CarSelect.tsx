@@ -192,7 +192,6 @@ const CarSelect = () => {
     const handleColorUpgrade = () => {
         if (!currentCar) return
 
-        // Only allow color upgrade if not already unlocked
         if (!currentCar.colorUnlocked && budget >= totalCost + 50) {
             setColorUpgrade(true)
             setTotalCost((prev) => prev + 50)
@@ -215,8 +214,7 @@ const CarSelect = () => {
 
     const handlePayment = () => {
         if (!currentCar) return
-        // if (totalCost > 0 && budget >= totalCost) gdy zmieniasz kolor to cie nie wypierdala
-        // if (budget >= totalCost) tu wypierdala
+
         if (totalCost > 0 && budget >= totalCost) {
             setBudget((prev) => prev - totalCost)
 
@@ -236,7 +234,7 @@ const CarSelect = () => {
                 setCars(updatedCars)
             }else{
                 setCars(updatedCars)
-                setShowEditScreen(false)  
+                setShowEditScreen(false)
             }
         }
     }
@@ -485,7 +483,7 @@ const CarSelect = () => {
                                             ></div>
                                         </>
                                     ) : (
-                                        <div 
+                                        <div
                                             className={`color-unlock ${colorUpgrade ? "active" : ""}`}
                                             onClick={handleColorUpgrade}
                                         >

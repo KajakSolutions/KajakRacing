@@ -1,420 +1,678 @@
-import {
-    KajakEngine,
-    Scene,
-    CarObject,
-    MapLoader,
-    CheckpointObject,
-    RaceManager,
-    RaceResults
-} from '@kajaksolutions/kajakengine';
-import { soundManager } from "../utils/SoundManager.ts"
+import {CarObject, CheckpointObject, KajakEngine, Overlap, Scene,} from "./index";
+import {MapLoader} from "./MapLoader.ts";
+import {soundManager} from "./SoundManager.ts";
+import {TrackSurfaceSegment} from "./objects/TrackSurfaceSegment.ts";
+import {NitroManager} from "./objects/NitroManager.ts";
+import {ObstacleManager} from "./objects/ObstacleManager.ts";
+import {ItemManager} from "./objects/ItemManager.ts";
+import {WeatherSystem, WeatherType} from "./objects/WeatherSystem.ts";
 
-export type CarStats = {
-    speed: number;
-    nitro: number;
-    drive: string;
-};
-
-export type PlayerCar = {
+export interface CarData {
     id: number;
     name: string;
     image: string;
-    stats: CarStats;
+    stats: {
+        speed: number;
+        nitro: number;
+        drive: string;
+    };
     color?: string;
-};
+}
 
-export type GameState = 'MAIN_MENU' | 'CAR_SELECT' | 'MAP_SELECT' | 'PLAYING' | 'PAUSED' | 'RACE_COMPLETE';
+export interface GameStats {
+    position: number;
+    currentLap: number;
+    totalLaps: number;
+    bestLapTime: number | null;
+    lastLapTime: number | null;
+    isNitroActive: boolean;
+    bananaPeels: number;
+    maxBananaPeels: number;
+    nitroAmount: number;
+    maxNitro: number;
+}
 
-export class GameEngine {
+export interface RaceResult {
+    position: number;
+    time: number;
+    isPlayer: boolean;
+    carId: number;
+    laps: number;
+    bestLapTime: number;
+}
+
+class GameEngine {
     private engine: KajakEngine | null = null;
-    private canvas: HTMLCanvasElement | null = null;
     private currentScene: Scene | null = null;
-    private playerCar: CarObject | null = null;
-    private raceManager: RaceManager | null = null;
-    private nitroActive: boolean = false;
-    private nitroTimer: number | null = null;
-    private baseSpeed: number = 0;
-    private selectedCar: PlayerCar | null = null;
-    private mapPath: string = '';
-    private gameStateListeners: ((state: GameState) => void)[] = [];
-    private gameState: GameState = 'MAIN_MENU';
-    private raceResultsListeners: ((results: RaceResults[]) => void)[] = [];
-    private lapTimeListeners: ((lapTime: number, bestLap: number) => void)[] = [];
-    private isDriving: boolean = false;
+    private debugState: boolean = false;
+    private audioInitialized: boolean = false;
+    private nitroManager: NitroManager | null = null;
+    private obstacleManager: ObstacleManager | null = null;
+    private itemManager: ItemManager | null = null;
+    private weatherSystem: WeatherSystem | null = null;
+    private canvas: HTMLCanvasElement | null = null;
+    private selectedCar: CarData | null = null;
+    private statsInterval: number | null = null;
 
-    public async initialize(canvasElement: HTMLCanvasElement): Promise<void> {
-        this.canvas = canvasElement;
-        this.engine = new KajakEngine(canvasElement);
+    private onStatsUpdateCallback: ((stats: GameStats) => void) | null = null;
+    private onRaceCompleteCallback: ((results: RaceResult[]) => void) | null = null;
 
+    constructor() {}
 
-        this.loadPlayerData();
+    public async init(mapPath: string, carData: CarData): Promise<void> {
+        this.selectedCar = carData;
 
-        document.addEventListener("keydown", this.handleKeyDown.bind(this));
-        document.addEventListener("keyup", this.handleKeyUp.bind(this));
-    }
+        this.createCanvas();
 
-    private loadPlayerData(): void {
-        const savedCar = localStorage.getItem('selectedCar');
-        if (savedCar) {
-            this.selectedCar = JSON.parse(savedCar);
-        }
-    }
+        this.engine = new KajakEngine(this.canvas!);
 
-    private setupCollisionHandling(): void {
-        if (!this.playerCar) return;
-
-
-        const originalOnCollision = this.playerCar.onCollision;
-
-        this.playerCar.onCollision = (other, collisionInfo) => {
-
-            originalOnCollision.call(this.playerCar, other, collisionInfo);
-
-
-            soundManager.playCollisionSound();
-        };
-    }
-
-    public savePlayerData(): void {
-        if (this.selectedCar) {
-            localStorage.setItem('selectedCar', JSON.stringify(this.selectedCar));
-        }
-    }
-
-    public async loadMap(mapPath: string): Promise<void> {
-        if (!this.engine) return;
-
-        this.mapPath = mapPath;
         try {
-            this.currentScene = await MapLoader.loadMap(mapPath);
+            await this.loadMap(mapPath);
 
-            if (this.currentScene) {
+            await this.initializeAudio();
 
-                this.raceManager = this.currentScene.raceManager;
+            this.setupGameSystems();
 
+            this.setupEventListeners();
 
-                for (const obj of this.currentScene.gameObjects.values()) {
-                    if (obj instanceof CarObject && obj.isPlayer) {
-                        this.playerCar = obj;
-
-
-                        if (this.selectedCar) {
-                            this.applyCarStats(this.playerCar, this.selectedCar.stats);
-                        }
-
-
-                        this.setupCollisionHandling();
-
-                        break;
-                    }
-                }
-
-                this.engine.scenes.set(1, this.currentScene);
-                this.engine.setCurrentScene(1);
-
-
-                if (this.raceManager) {
-
-                    this.raceManager.onLapCompleted = (car, lap, lapTime, bestLap) => {
-                        if (car.isPlayer) {
-                            this.notifyLapTimeListeners(lapTime, bestLap);
-                        }
-                    };
-
-
-                    this.raceManager.onRaceFinished = (results) => {
-                        this.setGameState('RACE_COMPLETE');
-                        this.notifyRaceResultsListeners(results);
-                    };
-                }
-            }
+            this.startStatsUpdate();
         } catch (error) {
-            console.error("Error loading map:", error);
-        }
-    }
-
-    private applyCarStats(car: CarObject, stats: CarStats): void {
-
-        this.baseSpeed = 183.91 + (stats.speed - 3) * 20;
-
-
-        if (stats.drive === 'FWD') {
-
-
-        } else if (stats.drive === 'RWD') {
-
-
-        } else if (stats.drive === '4WD') {
-
-
+            console.error("Failed to initialize game:", error);
+            throw error;
         }
     }
 
     public start(): void {
-        if (this.engine) {
-            this.engine.start();
-            this.setGameState('PLAYING');
-
-
-            this.updateEngineSound(0.2);
-
-
-            soundManager.play('background_music');
-        }
-    }
-
-    public stop(): void {
-        if (this.engine) {
-            this.engine.stop();
-            this.setGameState('MAIN_MENU');
-
-            soundManager.stop('engine');
-
-            soundManager.stop('background_music');
-
-            this.isDriving = false;
-
-            if (this.nitroActive) {
-                this.deactivateNitro();
-            }
-        }
+        if (!this.engine) return;
+        this.engine.start();
     }
 
     public pause(): void {
-        if (this.engine) {
-            this.engine.stop();
-            this.setGameState('PAUSED');
-
-
-            soundManager.pause('engine');
-
-
-            soundManager.pause('background_music');
-        }
+        if (!this.engine) return;
+        this.engine.stop();
     }
 
     public resume(): void {
+        if (!this.engine) return;
+        this.engine.start();
+    }
+
+    public stop(): void {
+        if (this.statsInterval) {
+            window.clearInterval(this.statsInterval);
+            this.statsInterval = null;
+        }
+
         if (this.engine) {
-            this.engine.start();
-            this.setGameState('PLAYING');
-
-
-            this.updateEngineSound(0.2);
-
-
-            soundManager.resume('background_music');
-        }
-    }
-
-    public selectCar(car: PlayerCar): void {
-        this.selectedCar = car;
-        this.savePlayerData();
-    }
-
-    public activateNitro(): void {
-        if (!this.playerCar || this.nitroActive || !this.selectedCar) return;
-
-        this.nitroActive = true;
-        const nitroBoost = this.selectedCar.stats.nitro * 75;
-
-        this.playerCar.setThrottle(this.baseSpeed + nitroBoost);
-
-
-        soundManager.playNitroSound();
-
-
-        if (this.nitroTimer !== null) {
-            clearTimeout(this.nitroTimer);
+            this.engine.stop();
         }
 
+        this.removeCanvas();
 
-        this.nitroTimer = window.setTimeout(() => {
-            this.deactivateNitro();
-        }, 3000);
-    }
-
-    private deactivateNitro(): void {
-        if (!this.playerCar) return;
-
-        this.nitroActive = false;
-        this.playerCar.setThrottle(this.isDriving ? this.baseSpeed : 0);
-        this.nitroTimer = null;
-    }
-
-    private handleKeyDown(e: KeyboardEvent): void {
-        if (this.gameState !== 'PLAYING' || !this.playerCar) return;
-
-        switch (e.key) {
-            case "ArrowUp":
-                this.playerCar.setThrottle(this.baseSpeed);
-                this.isDriving = true;
-
-                this.updateEngineSound(1.0);
-                break;
-            case "ArrowDown":
-                this.playerCar.setThrottle(-30);
-
-                this.updateEngineSound(0.3);
-                break;
-            case "ArrowLeft":
-                this.playerCar.setSteerAngle(-Math.PI / 4);
-                break;
-            case "ArrowRight":
-                this.playerCar.setSteerAngle(Math.PI / 4);
-                break;
-            case " ":
-                this.activateNitro();
-                break;
-            case "Escape":
-                this.pause();
-                break;
-        }
-    }
-
-    private updateEngineSound(throttleLevel: number): void {
-        if (!this.playerCar) return;
-
-
-        const speed = this.playerCar.velocity ? Math.sqrt(
-            this.playerCar.velocity.x * this.playerCar.velocity.x +
-            this.playerCar.velocity.y * this.playerCar.velocity.y
-        ) : 0;
-
-
-        const normalizedSpeed = Math.min(speed / this.baseSpeed, 1);
-
-
-        const revLevel = 0.5 * throttleLevel + 0.5 * normalizedSpeed;
-
-
-        soundManager.playEngineSound(revLevel);
-    }
-
-    private handleKeyUp(e: KeyboardEvent): void {
-        if (this.gameState !== 'PLAYING' || !this.playerCar) return;
-
-        switch (e.key) {
-            case "ArrowUp":
-            case "ArrowDown":
-                this.playerCar.setThrottle(0);
-
-                this.isDriving = false;
-
-                this.updateEngineSound(0.2);
-                break;
-            case "ArrowLeft":
-            case "ArrowRight":
-                this.playerCar.setSteerAngle(0);
-                break;
-        }
+        this.engine = null;
+        this.currentScene = null;
+        this.nitroManager = null;
+        this.obstacleManager = null;
+        this.itemManager = null;
+        this.weatherSystem = null;
     }
 
     public setDebugMode(enabled: boolean): void {
+        this.debugState = enabled;
         if (this.engine) {
             this.engine.setDebugMode(enabled);
         }
     }
 
-    public addGameStateListener(listener: (state: GameState) => void): void {
-        this.gameStateListeners.push(listener);
+    public toggleDebugMode(): void {
+        this.setDebugMode(!this.debugState);
     }
 
-    public removeGameStateListener(listener: (state: GameState) => void): void {
-        this.gameStateListeners = this.gameStateListeners.filter(l => l !== listener);
+    public isDebugMode(): boolean {
+        return this.debugState;
     }
 
-    public addRaceResultsListener(listener: (results: RaceResults[]) => void): void {
-        this.raceResultsListeners.push(listener);
+    public executeCommand(commandStr: string): string {
+        const parts = commandStr.trim().split(/\s+/);
+        const command = parts[0].toLowerCase();
+        const args = parts.slice(1);
+
+        switch (command) {
+            case 'debug':
+                this.toggleDebugMode();
+                return `Tryb debugowania ${this.debugState ? 'włączony' : 'wyłączony'}`;
+
+            case 'tp':
+                return this.commandTeleport(args);
+
+            case 'nitro':
+                return this.commandNitro(args);
+
+            case 'weather':
+                return this.commandWeather(args);
+
+            case 'fps':
+                return 'Polecenie fps nie jest jeszcze zaimplementowane';
+
+            case 'banana':
+                return this.commandBanana(args);
+
+            case 'god':
+                return this.commandGodMode();
+
+            case 'spawn':
+                return this.commandSpawn(args);
+
+            default:
+                return `Nieznane polecenie: ${command}. Wpisz 'help' aby zobaczyć dostępne polecenia.`;
+        }
     }
 
-    public removeRaceResultsListener(listener: (results: RaceResults[]) => void): void {
-        this.raceResultsListeners = this.raceResultsListeners.filter(l => l !== listener);
+    private commandTeleport(args: string[]): string {
+        if (args.length < 2) {
+            return 'Użycie: tp [x] [y]';
+        }
+
+        const x = parseFloat(args[0]);
+        const y = parseFloat(args[1]);
+
+        if (isNaN(x) || isNaN(y)) {
+            return 'Błędne koordynaty. Użycie: tp [x] [y]';
+        }
+
+        const playerCar = this.findPlayerCar();
+        if (!playerCar) {
+            return 'Nie znaleziono pojazdu gracza';
+        }
+
+        playerCar.position = { x, y };
+        return `Teleportowano do pozycji (${x}, ${y})`;
     }
 
-    public addLapTimeListener(listener: (lapTime: number, bestLap: number) => void): void {
-        this.lapTimeListeners.push(listener);
+    private commandNitro(args: string[]): string {
+        const playerCar = this.findPlayerCar();
+        if (!playerCar) {
+            return 'Nie znaleziono pojazdu gracza';
+        }
+
+        if (args.length < 1) {
+            return `Obecna ilość nitro: ${playerCar.nitroAmount}`;
+        }
+
+        const amount = parseInt(args[0]);
+        if (isNaN(amount) || amount < 0) {
+            return 'Nieprawidłowa ilość nitro. Podaj liczbę większą od 0.';
+        }
+
+        playerCar.refillNitro(amount);
+        return `Ustawiono nitro na ${amount}`;
     }
 
-    public removeLapTimeListener(listener: (lapTime: number, bestLap: number) => void): void {
-        this.lapTimeListeners = this.lapTimeListeners.filter(l => l !== listener);
+    private commandWeather(args: string[]): string {
+        if (!this.weatherSystem || !this.currentScene) {
+            return 'System pogodowy nie jest dostępny';
+        }
+
+        if (args.length < 1) {
+            return `Obecna pogoda: ${this.weatherSystem.getCurrentWeather()}`;
+        }
+
+        const weatherType = args[0].toUpperCase();
+        if (!['CLEAR', 'RAIN', 'SNOW'].includes(weatherType)) {
+            return 'Nieprawidłowy typ pogody. Dostępne opcje: clear, rain, snow';
+        }
+
+        const weatherEnum = WeatherType[weatherType as keyof typeof WeatherType];
+        this.weatherSystem.forceWeather(weatherEnum);
+
+        return `Zmieniono pogodę na ${weatherType}`;
     }
 
-    private setGameState(state: GameState): void {
-        this.gameState = state;
-        this.notifyGameStateListeners();
+    private commandBanana(args: string[]): string {
+        const playerCar = this.findPlayerCar();
+        if (!playerCar) {
+            return 'Nie znaleziono pojazdu gracza';
+        }
+
+        const amount = args.length > 0 ? parseInt(args[0]) : 1;
+        if (isNaN(amount) || amount < 0) {
+            return 'Nieprawidłowa ilość bananów. Podaj liczbę większą od 0.';
+        }
+
+        for (let i = 0; i < amount; i++) {
+            playerCar.collectBananaPeel();
+        }
+
+        return `Dodano ${amount} bananów. Obecna ilość: ${playerCar.bananaPeels}/${playerCar.maxBananaPeels}`;
     }
 
-    private notifyGameStateListeners(): void {
-        this.gameStateListeners.forEach(listener => {
-            listener(this.gameState);
-        });
+    private commandGodMode(): string {
+        return 'Polecenie god nie jest jeszcze zaimplementowane, może w przyszłości...';
     }
 
-    private notifyRaceResultsListeners(results: RaceResults[]): void {
-        this.raceResultsListeners.forEach(listener => {
-            listener(results);
-        });
+    private commandSpawn(args: string[]): string {
+        if (args.length < 1) {
+            return 'Użycie: spawn [item]';
+        }
+
+        const item = args[0].toLowerCase();
+
+        switch (item) {
+            case 'nitro': {
+                const playerCar = this.findPlayerCar();
+
+                if (!playerCar) {
+                    return 'Nie znaleziono pojazdu gracza';
+                }
+
+                if (this.nitroManager && this.currentScene) {
+                    this.nitroManager.initialize([
+                        {
+                            position: {
+                                x: playerCar.position.x + 5,
+                                y: playerCar.position.y
+                            }
+                        }
+                    ]);
+                    return 'Stworzono nitro';
+                }
+                return 'Nie można stworzyć nitro'; }
+
+            case 'banana': {
+                const car = this.findPlayerCar();
+
+                if (!car) {
+                    return 'Nie znaleziono pojazdu gracza';
+                }
+
+                if (this.obstacleManager) {
+                    const pos = { x: car.position.x + 3, y: car.position.y };
+                    this.obstacleManager.createObstacle('bananaPeel', pos, -1);
+                    return 'Stworzono banana';
+                }
+                return 'Nie można stworzyć banana';
+                }
+
+            default:
+                return `Nieznany przedmiot: ${item}`;
+        }
     }
 
-    private notifyLapTimeListeners(lapTime: number, bestLap: number): void {
-        this.lapTimeListeners.forEach(listener => {
-            listener(lapTime, bestLap);
-        });
-    }
+    private findPlayerCar(): CarObject | null {
+        if (!this.currentScene) return null;
 
-    public getGameState(): GameState {
-        return this.gameState;
-    }
-
-    public getCurrentPosition(): number | null {
-        if (!this.raceManager || !this.playerCar) return null;
-
-
-
-
-
-
-
-
-
-        return 1;
+        for (const obj of this.currentScene.gameObjects.values()) {
+            if (obj instanceof CarObject && obj.isPlayer) {
+                return obj;
+            }
+        }
 
         return null;
     }
 
-    public getCurrentLap(): number | null {
-        if (!this.raceManager || !this.playerCar) return null;
-
-        const progress = this.raceManager.getCarProgress(this.playerCar.id);
-        return progress ? progress.currentLap + 1 : null;
+    public activateNitro(): void {
+        const playerCar = this.findPlayerCar();
+        if (playerCar) {
+            playerCar.activateNitro();
+        }
     }
 
-    public getTotalLaps(): number | null {
-        if (!this.raceManager) return null;
+    public dropBananaPeel(): void {
+        if (!this.obstacleManager) return;
 
-        return this.raceManager.config.totalLaps;
+        const playerCar = this.findPlayerCar();
+        if (!playerCar) return;
+
+        if (playerCar.useBananaPeel()) {
+            const carAngle = playerCar.rotation;
+            const dropDistance = -3;
+            const dropX = playerCar.position.x - Math.sin(carAngle) * dropDistance;
+            const dropY = playerCar.position.y - Math.cos(carAngle) * dropDistance;
+
+            this.obstacleManager.createObstacle('bananaPeel', { x: dropX, y: dropY }, playerCar.id);
+        }
     }
 
-    public cleanup(): void {
+    public onStatsUpdate(callback: (stats: GameStats) => void): void {
+        this.onStatsUpdateCallback = callback;
+    }
 
-        document.removeEventListener("keydown", this.handleKeyDown.bind(this));
-        document.removeEventListener("keyup", this.handleKeyUp.bind(this));
+    public onRaceComplete(callback: (results: RaceResult[]) => void): void {
+        this.onRaceCompleteCallback = callback;
+    }
 
+    private createCanvas(): void {
+        this.removeCanvas();
 
-        if (this.nitroTimer !== null) {
-            clearTimeout(this.nitroTimer);
+        this.canvas = document.createElement('canvas');
+        const container = document.getElementById('game-container');
+        if (container) {
+            container.appendChild(this.canvas);
+        } else {
+            console.error('Game container not found');
+        }
+    }
+
+    private removeCanvas(): void {
+        if (this.canvas && this.canvas.parentNode) {
+            this.canvas.parentNode.removeChild(this.canvas);
+            this.canvas = null;
+
+            const secondBackground = document.getElementById('secondBackground');
+
+            if (!secondBackground) return;
+            secondBackground.parentNode!.removeChild(secondBackground);
+        }
+    }
+
+    private async loadMap(mapPath: string): Promise<void> {
+        try {
+            this.currentScene = await MapLoader.loadMap(mapPath);
+
+            if (!this.engine || !this.currentScene) {
+                throw new Error("Engine or scene not initialized");
+            }
+
+            this.engine.scenes.set(1, this.currentScene);
+            this.engine.setCurrentScene(1);
+
+            this.setupCollisions(this.currentScene);
+
+            if (this.selectedCar) {
+                this.customizePlayerCar();
+            }
+        } catch (error) {
+            console.error("Error loading map:", error);
+            throw error;
+        }
+    }
+
+    private setupCollisions(scene: Scene): void {
+        const cars = Array.from(scene.gameObjects.values())
+            .filter(obj => obj instanceof CarObject) as CarObject[];
+
+        const checkpoints = Array.from(scene.gameObjects.values())
+            .filter(obj => obj instanceof CheckpointObject) as CheckpointObject[];
+
+        const barriers = Array.from(scene.gameObjects.values())
+            .filter(obj => !(obj instanceof CarObject) &&
+                !(obj instanceof CheckpointObject) &&
+                !(obj instanceof TrackSurfaceSegment));
+
+        for (let i = 0; i < cars.length; i++) {
+            for (let j = i + 1; j < cars.length; j++) {
+                const overlap = new Overlap(
+                    cars[i],
+                    cars[j],
+                    (car1, car2, collisionInfo) => {
+                        if (collisionInfo) {
+                            car1.onCollision(car2, collisionInfo);
+                        }
+                    },
+                    { customCollisionHandler: true }
+                );
+                scene.overlapManager.addOverlap(overlap);
+            }
         }
 
+        for (const car of cars) {
+            for (const checkpoint of checkpoints) {
+                const overlap = new Overlap(
+                    car,
+                    checkpoint,
+                    (vehicle, checkpointObj) => {
+                        if (checkpointObj instanceof CheckpointObject) {
+                            if (vehicle instanceof CarObject && vehicle!.isPlayer && !checkpointObj.isActivated) {
+                                checkpointObj.activate(vehicle);
+                                checkpointObj.spriteManager!.hidden = true;
+                            }
+                        }
+                    }
+                );
+                scene.overlapManager.addOverlap(overlap);
+            }
+        }
 
-        soundManager.stopEngineSound();
-        soundManager.stop('background_music');
+        for (const car of cars) {
+            for (const barrier of barriers) {
+                const overlap = new Overlap(
+                    car,
+                    barrier,
+                    (vehicle, staticObj, collisionInfo) => {
+                        if (collisionInfo) {
+                            vehicle.onCollision(staticObj, collisionInfo);
+                        }
+                    },
+                    { customCollisionHandler: true }
+                );
+                scene.overlapManager.addOverlap(overlap);
+            }
+        }
+    }
 
+    private async initializeAudio(): Promise<void> {
+        if (this.audioInitialized) return;
 
-        this.gameStateListeners = [];
-        this.raceResultsListeners = [];
-        this.lapTimeListeners = [];
+        const playerCar = this.findPlayerCar();
+        if (playerCar && playerCar.soundSystem) {
+            await playerCar.soundSystem.initialize();
+        }
+
+        await soundManager.loadSound('background_music', 'game/sounds/background.mp3', {
+            loop: true,
+            volume: 0.5,
+            category: 'music'
+        });
+
+        soundManager.play('background_music');
+
+        this.audioInitialized = true;
+    }
+
+    private setupGameSystems(): void {
+        if (!this.currentScene) return;
+
+        this.nitroManager = new NitroManager(this.currentScene);
+        const nitroSpawns = [
+            { position: { x: 20, y: 20 }, respawnTime: 30000 },
+            { position: { x: -20, y: -20 }, respawnTime: 30000 }
+        ];
+        this.nitroManager.initialize(nitroSpawns);
+
+        this.obstacleManager = new ObstacleManager(this.currentScene, {
+            maxActiveObstacles: 15,
+            bananaPeelLifespan: 30000
+        });
+
+        this.itemManager = new ItemManager(this.currentScene, {
+            maxItems: 8,
+            itemRespawnTime: 15000,
+            spawnInterval: 10000
+        });
+        this.itemManager.startItemSpawning();
+
+        this.setupWeather();
+    }
+
+    private setupWeather(): void {
+        if (!this.currentScene) return;
+
+        // TODO: Refactor this to MapLoader
+
+        const puddleSpawnPoints = [
+            {
+                position: { x: -30, y: -10 },
+                size: { x: 5, y: 4 },
+                type: 'puddle' as const
+            },
+            {
+                position: { x: 15, y: 15 },
+                size: { x: 6, y: 3 },
+                type: 'puddle' as const
+            },
+            {
+                position: { x: 40, y: -20 },
+                size: { x: 4, y: 4 },
+                type: 'ice' as const
+            },
+            {
+                position: { x: -20, y: 30 },
+                size: { x: 7, y: 3 },
+                type: 'ice' as const
+            }
+        ];
+
+        const weatherTypes = [WeatherType.CLEAR, WeatherType.RAIN, WeatherType.SNOW];
+        const randomWeather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
+
+        console.log(`Initializing weather system with ${randomWeather} weather`);
+
+        this.weatherSystem = new WeatherSystem(this.currentScene, {
+            initialWeather: randomWeather,
+            minDuration: 30000,
+            maxDuration: 120000,
+            intensity: 0.8,
+            puddleSpawnPoints: puddleSpawnPoints,
+            allowedWeatherTypes: [WeatherType.CLEAR, WeatherType.RAIN, WeatherType.SNOW]
+        });
+
+        this.currentScene.setWeatherSystem(this.weatherSystem);
+    }
+
+    private customizePlayerCar(): void {
+        // TODO: check if this.selectedCar is set
+        if (!this.selectedCar) return;
+
+        const playerCar = this.findPlayerCar();
+        if (!playerCar) return;
+
+        const speedMultiplier = 1 + (this.selectedCar.stats.speed * 0.1);
+        playerCar.setThrottle(speedMultiplier);
+
+        const nitroValue = this.selectedCar.stats.nitro * 20;
+        playerCar.refillNitro(nitroValue);
+
+        if (this.selectedCar.color) {
+            // TODO: Implement car color customization
+            console.log(`Setting car color to ${this.selectedCar.color}`);
+        }
+    }
+
+    private setupEventListeners(): void {
+        document.addEventListener('keydown', this.handleKeyDown.bind(this));
+        document.addEventListener('keyup', this.handleKeyUp.bind(this));
+    }
+
+    private handleKeyDown(e: KeyboardEvent): void {
+        const playerCar = this.findPlayerCar();
+        if (!playerCar) return;
+
+        switch (e.key) {
+            case "ArrowUp":
+                playerCar.setThrottle(183.91);
+                break;
+            case "ArrowDown":
+                playerCar.setThrottle(-30);
+                break;
+            case "ArrowLeft":
+                playerCar.setSteerAngle(-Math.PI / 2);
+                break;
+            case "ArrowRight":
+                playerCar.setSteerAngle(Math.PI / 2);
+                break;
+            case " ":
+                this.activateNitro();
+                break;
+            case "b":
+                this.dropBananaPeel();
+                break;
+            case "d":
+                this.toggleDebugMode();
+                break;
+        }
+    }
+
+    private handleKeyUp(e: KeyboardEvent): void {
+        const playerCar = this.findPlayerCar();
+        if (!playerCar) return;
+
+        switch (e.key) {
+            case "ArrowUp":
+            case "ArrowDown":
+                playerCar.setThrottle(0);
+                break;
+            case "ArrowLeft":
+            case "ArrowRight":
+                playerCar.setSteerAngle(0);
+                break;
+        }
+    }
+
+    private startStatsUpdate(): void {
+        this.statsInterval = window.setInterval(() => {
+            this.updateGameStats();
+        }, 100);
+    }
+
+    private updateGameStats(): void {
+        if (!this.currentScene || !this.onStatsUpdateCallback) return;
+
+        const playerCar = this.findPlayerCar();
+        if (!playerCar) return;
+
+        const raceManager = this.currentScene.raceManager;
+        const progress = raceManager.getCarProgress(playerCar.id);
+
+        if (!progress) return;
+
+        let position = 1;
+        for (const [carId, car] of this.currentScene.gameObjects.entries()) {
+            if (!(car instanceof CarObject) || car.id === playerCar.id) continue;
+
+            const carProgress = raceManager.getCarProgress(carId);
+            if (!carProgress) continue;
+
+            if (carProgress.currentLap > progress.currentLap ||
+                (carProgress.currentLap === progress.currentLap &&
+                    carProgress.lastCheckpoint > progress.lastCheckpoint)) {
+                position++;
+            }
+        }
+
+        const stats: GameStats = {
+            position,
+            currentLap: progress.currentLap + 1,
+            totalLaps: raceManager.config.totalLaps,
+            bestLapTime: progress.bestLapTime !== Infinity ? progress.bestLapTime : null,
+            lastLapTime: progress.lapTimes.length > 0 ? progress.lapTimes[progress.lapTimes.length - 1] : null,
+            isNitroActive: playerCar.nitroActive,
+            bananaPeels: playerCar.bananaPeels,
+            maxBananaPeels: playerCar.maxBananaPeels,
+            nitroAmount: playerCar.nitroAmount,
+            maxNitro: playerCar.maxNitro
+        };
+
+        this.onStatsUpdateCallback(stats);
+
+        if (raceManager.isRaceFinished && this.onRaceCompleteCallback) {
+            this.onRaceCompleteCallback(this.getRaceResults());
+        }
+    }
+
+    private getRaceResults(): RaceResult[] {
+        if (!this.currentScene) return [];
+
+        const raceManager = this.currentScene.raceManager;
+        return raceManager.results.map(result => ({
+            position: result.position,
+            time: result.time,
+            isPlayer: result.isPlayer,
+            carId: result.carId,
+            laps: result.laps,
+            bestLapTime: result.bestLapTime
+        }));
     }
 }
 
-
+// Singleton instance
 export const gameEngine = new GameEngine();
