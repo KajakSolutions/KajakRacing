@@ -7,13 +7,13 @@ type GameStateType = 'LOADING' | 'MAIN_MENU' | 'CAR_SELECT' | 'MAP_SELECT' | 'PL
 export interface Car {
     id: number;
     name: string;
-    image: string;
+    type: string;
     stats: {
         speed: number;
         nitro: number;
         drive: string;
     };
-    color?: string;
+    color: string;
 }
 
 interface GameContextType {
@@ -49,7 +49,6 @@ interface GameContextType {
     loadingMessage: string;
 }
 
-// Create context with default values
 const GameContext = createContext<GameContextType>({
     gameState: 'MAIN_MENU',
     setGameState: () => {},
@@ -171,8 +170,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
                 setGameState('RACE_COMPLETE');
                 soundManager.play('finish');
             });
-
-            // The fastest way to implement the loading progress :)
 
             setLoadingProgress(10);
             setLoadingMessage('Loading map...');

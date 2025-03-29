@@ -10,13 +10,13 @@ import {WeatherSystem, WeatherType} from "./objects/WeatherSystem.ts";
 export interface CarData {
     id: number;
     name: string;
-    image: string;
+    type: string;
     stats: {
         speed: number;
         nitro: number;
         drive: string;
     };
-    color?: string;
+    color: string;
 }
 
 export interface GameStats {
@@ -260,7 +260,6 @@ class GameEngine {
         switch (item) {
             case 'nitro': {
                 const playerCar = this.findPlayerCar();
-
                 if (!playerCar) {
                     return 'Nie znaleziono pojazdu gracza';
                 }
@@ -276,11 +275,11 @@ class GameEngine {
                     ]);
                     return 'Stworzono nitro';
                 }
-                return 'Nie można stworzyć nitro'; }
+                return 'Nie można stworzyć nitro';
+            }
 
             case 'banana': {
                 const car = this.findPlayerCar();
-
                 if (!car) {
                     return 'Nie znaleziono pojazdu gracza';
                 }
@@ -291,7 +290,7 @@ class GameEngine {
                     return 'Stworzono banana';
                 }
                 return 'Nie można stworzyć banana';
-                }
+            }
 
             default:
                 return `Nieznany przedmiot: ${item}`;
@@ -357,12 +356,12 @@ class GameEngine {
         if (this.canvas && this.canvas.parentNode) {
             this.canvas.parentNode.removeChild(this.canvas);
             this.canvas = null;
-
-            const secondBackground = document.getElementById('secondBackground');
-
-            if (!secondBackground) return;
-            secondBackground.parentNode!.removeChild(secondBackground);
         }
+
+        const secondBackground = document.getElementById('secondBackground');
+        if (!secondBackground) return;
+
+        secondBackground.remove();
     }
 
     private async loadMap(mapPath: string): Promise<void> {
@@ -422,7 +421,7 @@ class GameEngine {
                     checkpoint,
                     (vehicle, checkpointObj) => {
                         if (checkpointObj instanceof CheckpointObject) {
-                            if (vehicle instanceof CarObject && vehicle!.isPlayer && !checkpointObj.isActivated) {
+                            if (vehicle instanceof CarObject && vehicle.isPlayer && !checkpointObj.isActivated) {
                                 checkpointObj.activate(vehicle);
                                 checkpointObj.spriteManager!.hidden = true;
                             }
@@ -458,7 +457,7 @@ class GameEngine {
             await playerCar.soundSystem.initialize();
         }
 
-        await soundManager.loadSound('background_music', 'game/sounds/background.mp3', {
+        await soundManager.loadSound('background_music', '/sounds/background.mp3', {
             loop: true,
             volume: 0.5,
             category: 'music'
@@ -495,66 +494,72 @@ class GameEngine {
     }
 
     private setupWeather(): void {
-        if (!this.currentScene) return;
+        if (this.currentScene && !this.currentScene.weatherSystem) {
+            const puddleSpawnPoints = [
+                {
+                    position: { x: -30, y: -10 },
+                    size: { x: 5, y: 4 },
+                    type: 'puddle' as const
+                },
+                {
+                    position: { x: 15, y: 15 },
+                    size: { x: 6, y: 3 },
+                    type: 'puddle' as const
+                },
+                {
+                    position: { x: 40, y: -20 },
+                    size: { x: 4, y: 4 },
+                    type: 'ice' as const
+                },
+                {
+                    position: { x: -20, y: 30 },
+                    size: { x: 7, y: 3 },
+                    type: 'ice' as const
+                },
+                {
+                    position: { x: 0, y: -30 },
+                    size: { x: 5, y: 5 },
+                    type: 'puddle' as const
+                }
+            ];
 
-        // TODO: Refactor this to MapLoader
+            const weatherTypes = [WeatherType.CLEAR, WeatherType.RAIN, WeatherType.SNOW];
+            const randomWeather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
 
-        const puddleSpawnPoints = [
-            {
-                position: { x: -30, y: -10 },
-                size: { x: 5, y: 4 },
-                type: 'puddle' as const
-            },
-            {
-                position: { x: 15, y: 15 },
-                size: { x: 6, y: 3 },
-                type: 'puddle' as const
-            },
-            {
-                position: { x: 40, y: -20 },
-                size: { x: 4, y: 4 },
-                type: 'ice' as const
-            },
-            {
-                position: { x: -20, y: 30 },
-                size: { x: 7, y: 3 },
-                type: 'ice' as const
-            }
-        ];
+            console.log(`Initializing weather system with ${randomWeather} weather`);
 
-        const weatherTypes = [WeatherType.CLEAR, WeatherType.RAIN, WeatherType.SNOW];
-        const randomWeather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
+            this.weatherSystem = new WeatherSystem(this.currentScene, {
+                initialWeather: randomWeather,
+                minDuration: 30000,
+                maxDuration: 120000,
+                intensity: 0.8,
+                puddleSpawnPoints: puddleSpawnPoints,
+                allowedWeatherTypes: [WeatherType.CLEAR, WeatherType.RAIN, WeatherType.SNOW]
+            });
 
-        console.log(`Initializing weather system with ${randomWeather} weather`);
-
-        this.weatherSystem = new WeatherSystem(this.currentScene, {
-            initialWeather: randomWeather,
-            minDuration: 30000,
-            maxDuration: 120000,
-            intensity: 0.8,
-            puddleSpawnPoints: puddleSpawnPoints,
-            allowedWeatherTypes: [WeatherType.CLEAR, WeatherType.RAIN, WeatherType.SNOW]
-        });
-
-        this.currentScene.setWeatherSystem(this.weatherSystem);
+            this.currentScene.setWeatherSystem(this.weatherSystem);
+        }
     }
 
     private customizePlayerCar(): void {
-        // TODO: check if this.selectedCar is set
         if (!this.selectedCar) return;
 
         const playerCar = this.findPlayerCar();
         if (!playerCar) return;
 
+        // TODO: Fix this
         const speedMultiplier = 1 + (this.selectedCar.stats.speed * 0.1);
         playerCar.setThrottle(speedMultiplier);
 
         const nitroValue = this.selectedCar.stats.nitro * 20;
         playerCar.refillNitro(nitroValue);
 
-        if (this.selectedCar.color) {
-            // TODO: Implement car color customization
-            console.log(`Setting car color to ${this.selectedCar.color}`);
+        if (playerCar.spriteManager) {
+            const spritePath = `/cars/${this.selectedCar.type}/${this.selectedCar.color}/sprites.png`;
+
+            playerCar.spriteManager.updateSpriteSheet(spritePath);
+
+            console.log(`Ustawiono sprite sheet ${spritePath} dla pojazdu gracza`);
         }
     }
 
@@ -674,5 +679,5 @@ class GameEngine {
     }
 }
 
-// Singleton instance
+// singleton instance
 export const gameEngine = new GameEngine();

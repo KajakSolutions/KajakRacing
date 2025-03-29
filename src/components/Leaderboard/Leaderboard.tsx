@@ -35,6 +35,7 @@ function Leaderboard() {
             setPrize(prizeMoney);
 
             const currentBudget = localStorage.getItem("budget");
+            console.log(currentBudget,prizeMoney);
             if (currentBudget) {
                 const newBudget = parseInt(currentBudget) + prizeMoney;
                 localStorage.setItem("budget", newBudget.toString());

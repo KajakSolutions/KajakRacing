@@ -151,7 +151,10 @@ export default class Scene {
         ctx.scale(Scene.scale, Scene.scale)
 
 
-        for (const obj of this._gameObjects.values()) {
+        const values = Array.from(this._gameObjects.values());
+        for (let i = values.length - 1; i >= 0; i--) {
+            const obj = values[i];
+
             if (this._debugMode) {
                 this.drawObject(ctx, obj)
             }

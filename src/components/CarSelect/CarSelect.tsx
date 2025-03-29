@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { useGame } from "../../context/GameContext"
+import { soundManager } from "../../utils/SoundManager"
 import "./CarSelect.scss"
 
 interface CarStats {
@@ -10,12 +11,13 @@ interface CarStats {
 
 interface Car {
     id: number
-    image: string
+    type: string  // typ auta: 'aubi', 'bemdablju', 'donda', 'saat'
     name: string
     price: number
     owned: boolean
     stats: CarStats
-    color?: string
+    color?: string  // kolor: 'black', 'red', 'white', 'yellow'
+    availableColors: string[]
     colorUnlocked?: boolean
 }
 
@@ -42,11 +44,12 @@ const CarSelect = () => {
             const initialCars = [
                 {
                     id: 0,
-                    image: "./bmw-e36.png",
-                    name: "BMW E36",
+                    type: "bemdablju",
+                    name: "bemdablju E36",
                     price: 100,
                     owned: false,
                     colorUnlocked: false,
+                    availableColors: ["blue", "green", "white", "red"],
                     stats: {
                         speed: 3,
                         nitro: 3,
@@ -55,11 +58,12 @@ const CarSelect = () => {
                 },
                 {
                     id: 1,
-                    image: "./saab-93.png",
-                    name: "Saab 93",
+                    type: "saat",
+                    name: "Saat Leon",
                     price: 0,
                     owned: true,
                     colorUnlocked: false,
+                    availableColors: ["blue", "red", "yellow"],
                     stats: {
                         speed: 2,
                         nitro: 4,
@@ -68,15 +72,30 @@ const CarSelect = () => {
                 },
                 {
                     id: 2,
-                    image: "./nissan-gtr.png",
-                    name: "Nissan GTR",
+                    type: "aubi",
+                    name: "Aubi a3",
                     price: 100,
                     owned: false,
                     colorUnlocked: false,
+                    availableColors: ["black", "red", "white", "yellow"],
                     stats: {
                         speed: 3,
                         nitro: 2,
                         drive: "4WD",
+                    },
+                },
+                {
+                    id: 3,
+                    type: "donda",
+                    name: "donda Civic",
+                    price: 50,
+                    owned: false,
+                    colorUnlocked: false,
+                    availableColors: ["blue", "pink", "red", "yellow"],
+                    stats: {
+                        speed: 2,
+                        nitro: 3,
+                        drive: "FWD",
                     },
                 },
             ]
@@ -118,10 +137,12 @@ const CarSelect = () => {
 
     const nextSlide = () => {
         setIndex((prev) => (prev + 1) % pages.length)
+        soundManager.play('slide')
     }
 
     const prevSlide = () => {
         setIndex((prev) => (prev - 1 + pages.length) % pages.length)
+        soundManager.play('slide')
     }
 
     const renderStars = (value: number, maxStars: number = 5) => {
@@ -150,19 +171,23 @@ const CarSelect = () => {
             }
 
             setCars(updatedCars)
+            soundManager.play('purchase')
         }
     }
 
     const handleEditClick = () => {
         setShowEditScreen(true)
+        soundManager.play('select')
     }
 
     const handleLastPageClick = () => {
         setGameState("MAIN_MENU")
+        soundManager.play('back')
     }
 
     const handleBackClick = () => {
         setShowEditScreen(false)
+        soundManager.play('back')
     }
 
     const handleSpeedUpgrade = () => {
@@ -174,6 +199,7 @@ const CarSelect = () => {
         ) {
             setSpeedUpgrades((prev) => prev + 1)
             setTotalCost((prev) => prev + 200)
+            soundManager.play('upgrade')
         }
     }
 
@@ -186,6 +212,7 @@ const CarSelect = () => {
         ) {
             setNitroUpgrades((prev) => prev + 1)
             setTotalCost((prev) => prev + 200)
+            soundManager.play('upgrade')
         }
     }
 
@@ -195,6 +222,7 @@ const CarSelect = () => {
         if (!currentCar.colorUnlocked && budget >= totalCost + 50) {
             setColorUpgrade(true)
             setTotalCost((prev) => prev + 50)
+            soundManager.play('upgrade')
         }
     }
 
@@ -204,13 +232,31 @@ const CarSelect = () => {
         selectCar({
             id: currentCar.id,
             name: currentCar.name,
-            image: currentCar.image,
+            type: currentCar.type,
             stats: currentCar.stats,
-            color: currentCar.color,
-        })
+            color: currentCar.color || 'red',
+        });
 
-        setGameState("MAP_SELECT")
+        setGameState("MAP_SELECT");
     }
+
+    const handleColorSelect = (color: string) => {
+        if (!currentCar || !currentCar.colorUnlocked) return;
+
+        if (!currentCar.availableColors.includes(color)) {
+            return;
+        }
+
+        const realCarIndex = index % cars.length;
+        const updatedCars = [...cars];
+        updatedCars[realCarIndex] = {
+            ...currentCar,
+            color: color,
+        };
+
+        setCars(updatedCars);
+        soundManager.play('select');
+    };
 
     const handlePayment = () => {
         if (!currentCar) return
@@ -230,26 +276,13 @@ const CarSelect = () => {
                 },
             }
 
-            if(!currentCar.colorUnlocked){
-                setCars(updatedCars)
-            }else{
-                setCars(updatedCars)
+            setCars(updatedCars)
+            soundManager.play('purchase')
+
+            if (currentCar.colorUnlocked) {
                 setShowEditScreen(false)
             }
         }
-    }
-
-    const handleColorSelect = (color: string) => {
-        if (!currentCar || !currentCar.colorUnlocked) return
-
-        const realCarIndex = index % cars.length
-        const updatedCars = [...cars]
-        updatedCars[realCarIndex] = {
-            ...currentCar,
-            color: color,
-        }
-
-        setCars(updatedCars)
     }
 
     if (!currentCar) return <div>Loading...</div>
@@ -305,8 +338,8 @@ const CarSelect = () => {
                                 position > 1 && position < pages.length - 1
                                     ? 0
                                     : isActive
-                                      ? 1
-                                      : 0.6
+                                        ? 1
+                                        : 0.6
 
                             const xOffset = (() => {
                                 if (position === pages.length - 1) {
@@ -336,16 +369,13 @@ const CarSelect = () => {
                                     }}
                                 >
                                     <img
-                                        src={page.image}
+                                        src={`/cars/${page.type}/${page.color || 'red'}/car_select.png`}
                                         alt={`${page.name}`}
                                         className="carousel-image"
-                                         style={{
-                                             filter: page.color ? `hue-rotate(${getHueRotateValue(page.color)})` : 'grayscale(100%) brightness(0.35);'
-                                        }}
                                     />
                                     <div className={`${page.owned ? "unlocked" : "carLocked"}`}>
-                                        <img src="/public/lock.png" alt="lock"/>
-                                        <p>$100</p>
+                                        <img src="/lock.png" alt="lock"/>
+                                        <p>${page.price}</p>
                                     </div>
                                 </div>
                             )
@@ -403,14 +433,9 @@ const CarSelect = () => {
                     <div className="wrapper">
                         <div className="car-container">
                             <img
-                                src={currentCar.image}
+                                src={`/cars/${currentCar.type}/${currentCar.color || 'red'}/car_select.png`}
                                 alt={currentCar.name}
                                 className="car-image"
-                                style={{
-                                    filter: currentCar.color
-                                        ? `hue-rotate(${getHueRotateValue(currentCar.color)})`
-                                        : "none",
-                                }}
                             />
                         </div>
                         <div className="settings-container">
@@ -469,18 +494,15 @@ const CarSelect = () => {
                                 <div className="colors">
                                     {currentCar.colorUnlocked || colorUpgrade ? (
                                         <>
-                                            <div
-                                                className={`color ${currentCar.color === "red" ? "active" : "red"}`}
-                                                onClick={() => handleColorSelect("red")}
-                                            ></div>
-                                            <div
-                                                className={`color ${currentCar.color === "blue" ? "active" : "blue"}`}
-                                                onClick={() => handleColorSelect("blue")}
-                                            ></div>
-                                            <div
-                                                className={`color ${currentCar.color === "yellow" ? "active" : "yellow"}`}
-                                                onClick={() => handleColorSelect("yellow")}
-                                            ></div>
+                                            {console.log(currentCar)}
+                                            {currentCar.availableColors.map(color => (
+                                                <div
+                                                    key={color}
+                                                    className={`color ${currentCar.color === color ? "active" : ""} ${color}`}
+                                                    onClick={() => handleColorSelect(color)}
+                                                    style={{backgroundImage: `url(/cars/${currentCar.type}/${color}/car_select.png)`, backgroundSize: 'cover', backgroundPosition: 'center'}}
+                                                ></div>
+                                            ))}
                                         </>
                                     ) : (
                                         <div
@@ -505,19 +527,6 @@ const CarSelect = () => {
             </div>
         </>
     )
-}
-
-function getHueRotateValue(color: string): string {
-    switch (color) {
-        case "red":
-            return "0deg"
-        case "blue":
-            return "180deg"
-        case "yellow":
-            return "60deg"
-        default:
-            return "0deg"
-    }
 }
 
 export default CarSelect
