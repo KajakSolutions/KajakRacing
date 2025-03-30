@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react"
 import { useGame } from "../../context/GameContext";
 import { soundManager } from "../../utils/SoundManager";
 import "./leaderboard.scss";
@@ -6,51 +6,54 @@ import "./leaderboard.scss";
 function Leaderboard() {
     const { exitGame, raceResults } = useGame();
     const [prize, setPrize] = useState(0);
+    const prizeAddedRef = useRef(false);
 
     useEffect(() => {
-        const playerResult = raceResults.find((result) => result.isPlayer);
+        if (!prizeAddedRef.current) {
+            const playerResult = raceResults.find((result) => result.isPlayer);
 
-        if (playerResult) {
-            const position = playerResult.position;
-            let prizeMoney = 0;
+            if (playerResult) {
+                const position = playerResult.position;
+                let prizeMoney = 0;
 
-            switch (position) {
-                case 1:
-                    prizeMoney = 500;
-                    break;
-                case 2:
-                    prizeMoney = 300;
-                    break;
-                case 3:
-                    prizeMoney = 200;
-                    break;
-                case 4:
-                    prizeMoney = 100;
-                    break;
-                default:
-                    prizeMoney = 50;
-                    break;
-            }
+                switch (position) {
+                    case 1:
+                        prizeMoney = 500;
+                        break;
+                    case 2:
+                        prizeMoney = 300;
+                        break;
+                    case 3:
+                        prizeMoney = 200;
+                        break;
+                    case 4:
+                        prizeMoney = 100;
+                        break;
+                    default:
+                        prizeMoney = 50;
+                        break;
+                }
 
-            setPrize(prizeMoney);
+                setPrize(prizeMoney);
 
-            const currentBudget = localStorage.getItem("budget");
-            console.log(currentBudget,prizeMoney);
-            if (currentBudget) {
-                const newBudget = parseInt(currentBudget) + prizeMoney;
-                localStorage.setItem("budget", newBudget.toString());
-            }
+                const currentBudget = localStorage.getItem("budget");
+                if (currentBudget) {
+                    const newBudget = parseInt(currentBudget) + prizeMoney;
+                    localStorage.setItem("budget", newBudget.toString());
 
-            const bestLapTime = playerResult.bestLapTime;
-            if (bestLapTime) {
-                saveBestLapTime(bestLapTime);
+                    prizeAddedRef.current = true;
+                }
+
+                const bestLapTime = playerResult.bestLapTime;
+                if (bestLapTime) {
+                    saveBestLapTime(bestLapTime);
+                }
             }
         }
     }, [raceResults]);
 
     const saveBestLapTime = (newTime: number) => {
-        // TODO: Save best lap time for each track
-        const trackId = "track1";
+        const trackId = localStorage.getItem("currentTrackId") || "track1";
 
         const savedTimes = localStorage.getItem("trackBestTimes");
         const bestTimes = savedTimes ? JSON.parse(savedTimes) : {};

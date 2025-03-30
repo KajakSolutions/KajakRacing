@@ -53,7 +53,6 @@ const HUD = () => {
 
     return (
         <div className="hud">
-            {/* Top HUD elements */}
             <div className="hud-top">
                 <div className="position-indicator">
                     <span className="label">POS</span>
@@ -66,7 +65,6 @@ const HUD = () => {
                 </div>
             </div>
 
-            {/* Bottom HUD elements */}
             <div className="hud-bottom">
                 <div className="time-display">
                     <div className="lap-time">
@@ -79,7 +77,6 @@ const HUD = () => {
                     </div>
                 </div>
 
-                {/* Nitro and banana indicators */}
                 <div className="right-panel">
                     <div className="banan-container">
                         <div className="banan">
@@ -101,7 +98,6 @@ const HUD = () => {
                 </div>
             </div>
 
-            {/* Pause button */}
             <button className="pause-button" onClick={pauseGame}>
                 II
             </button>

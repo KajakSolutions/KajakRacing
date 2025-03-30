@@ -43,6 +43,7 @@ interface WeatherConfig {
         size: Vec2D;
         type?: 'puddle' | 'ice';
     }>;
+    allowedWeatherTypes?: WeatherType[];
 }
 
 interface SurfaceConfig {
@@ -205,22 +206,35 @@ export class MapLoader {
 
         const surfaceManager = new TrackSurfaceManager();
 
+
+        let weatherConfig: WeatherConfig = {
+            initialWeather: WeatherType.CLEAR,
+            minDuration: 30000,
+            maxDuration: 120000,
+            intensity: 0.8,
+            puddleSpawnPoints: [],
+            allowedWeatherTypes: [WeatherType.CLEAR, WeatherType.RAIN, WeatherType.SNOW]
+        };
+
         if (config.weather) {
             let initialWeather;
             if (config.weather.initialWeather) {
                 initialWeather = WeatherType[config.weather.initialWeather as keyof typeof WeatherType];
             }
 
-            const weatherSystem = new WeatherSystem(scene, {
-                initialWeather,
-                minDuration: config.weather.minDuration,
-                maxDuration: config.weather.maxDuration,
-                intensity: config.weather.intensity,
-                puddleSpawnPoints: config.weather.puddleSpawnPoints
-            });
-
-            scene.setWeatherSystem(weatherSystem);
+            weatherConfig = {
+                ...weatherConfig,
+                initialWeather: initialWeather || weatherConfig.initialWeather,
+                minDuration: config.weather.minDuration || weatherConfig.minDuration,
+                maxDuration: config.weather.maxDuration || weatherConfig.maxDuration,
+                intensity: config.weather.intensity || weatherConfig.intensity,
+                puddleSpawnPoints: config.weather.puddleSpawnPoints || weatherConfig.puddleSpawnPoints,
+                allowedWeatherTypes: config.weather.allowedWeatherTypes || weatherConfig.allowedWeatherTypes
+            };
         }
+
+        const weatherSystem = new WeatherSystem(scene, weatherConfig);
+        scene.setWeatherSystem(weatherSystem);
 
 
         if (config.surfaces) {

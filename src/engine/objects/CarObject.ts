@@ -4,6 +4,7 @@ import { add, dotProduct, length, subtract, vec2D } from "../utils/math.ts"
 import { ColliderInfo } from "./Colliders/Collider.ts"
 import {CarSoundSystem} from "./Sounds/CarSoundSystem.ts";
 import {TrackSurfaceManager} from "./TrackSurfaceManager.ts";
+import { CarObjectOptions } from "@kajaksolutions/kajakengine"
 
 export interface CarObjectOptions extends PhysicObjectOptions {
     maxGrip?: number;
@@ -52,7 +53,7 @@ export default class CarObject extends PhysicObject {
     private readonly wheelBase: number
     private readonly caFront: number = -5
     private readonly caRear: number = -5.2
-    private readonly driveTrain: number = 0
+    private _driveTrain: number = 0
     private readonly _wheelSize: Vec2D
     public readonly restitution: number = 0.3
     public readonly collisionDamping: number = 0.9
@@ -112,6 +113,15 @@ export default class CarObject extends PhysicObject {
 
     get wheelSize(): Vec2D {
         return this._wheelSize
+    }
+
+
+    get driveTrain(): number {
+        return this._driveTrain
+    }
+
+    set driveTrain(value: number) {
+        this._driveTrain = value
     }
 
     get frontAxleToCg(): number {
@@ -242,7 +252,7 @@ export default class CarObject extends PhysicObject {
                 Math.min(this.maxGrip, this.caRear * rearSlipAngle)
             ) * rearNormal * surfaceProps.gripMultiplier;
 
-        const driveRatio = 0.5 * this.driveTrain
+        const driveRatio = 0.5 * this._driveTrain
         const tractionForce =
             100 *
             (this.throttle *

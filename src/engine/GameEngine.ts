@@ -54,6 +54,9 @@ class GameEngine {
     private selectedCar: CarData | null = null;
     private statsInterval: number | null = null;
 
+    private speedMultiplier: number = 1;
+    private nitroValue: number = 0;
+
     private onStatsUpdateCallback: ((stats: GameStats) => void) | null = null;
     private onRaceCompleteCallback: ((results: RaceResult[]) => void) | null = null;
 
@@ -204,8 +207,8 @@ class GameEngine {
             return 'Nieprawidłowa ilość nitro. Podaj liczbę większą od 0.';
         }
 
-        playerCar.refillNitro(amount);
-        return `Ustawiono nitro na ${amount}`;
+        playerCar.refillNitro(amount * this.nitroValue);
+        return `Ustawiono nitro na ${amount * this.nitroValue}`;
     }
 
     private commandWeather(args: string[]): string {
@@ -489,56 +492,6 @@ class GameEngine {
             spawnInterval: 10000
         });
         this.itemManager.startItemSpawning();
-
-        this.setupWeather();
-    }
-
-    private setupWeather(): void {
-        if (this.currentScene && !this.currentScene.weatherSystem) {
-            const puddleSpawnPoints = [
-                {
-                    position: { x: -30, y: -10 },
-                    size: { x: 5, y: 4 },
-                    type: 'puddle' as const
-                },
-                {
-                    position: { x: 15, y: 15 },
-                    size: { x: 6, y: 3 },
-                    type: 'puddle' as const
-                },
-                {
-                    position: { x: 40, y: -20 },
-                    size: { x: 4, y: 4 },
-                    type: 'ice' as const
-                },
-                {
-                    position: { x: -20, y: 30 },
-                    size: { x: 7, y: 3 },
-                    type: 'ice' as const
-                },
-                {
-                    position: { x: 0, y: -30 },
-                    size: { x: 5, y: 5 },
-                    type: 'puddle' as const
-                }
-            ];
-
-            const weatherTypes = [WeatherType.CLEAR, WeatherType.RAIN, WeatherType.SNOW];
-            const randomWeather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
-
-            console.log(`Initializing weather system with ${randomWeather} weather`);
-
-            this.weatherSystem = new WeatherSystem(this.currentScene, {
-                initialWeather: randomWeather,
-                minDuration: 30000,
-                maxDuration: 120000,
-                intensity: 0.8,
-                puddleSpawnPoints: puddleSpawnPoints,
-                allowedWeatherTypes: [WeatherType.CLEAR, WeatherType.RAIN, WeatherType.SNOW]
-            });
-
-            this.currentScene.setWeatherSystem(this.weatherSystem);
-        }
     }
 
     private customizePlayerCar(): void {
@@ -547,12 +500,21 @@ class GameEngine {
         const playerCar = this.findPlayerCar();
         if (!playerCar) return;
 
-        // TODO: Fix this
-        const speedMultiplier = 1 + (this.selectedCar.stats.speed * 0.1);
-        playerCar.setThrottle(speedMultiplier);
+        this.speedMultiplier = 1 + (this.selectedCar.stats.speed * 0.1);
 
-        const nitroValue = this.selectedCar.stats.nitro * 20;
-        playerCar.refillNitro(nitroValue);
+         this.nitroValue = this.selectedCar.stats.nitro * 20;
+
+        const driveTrainMap: Record<string, number> = {
+            'FWD': 2,
+            'RWD': 0,
+            '4WD': 1
+        };
+
+        if (this.selectedCar.stats.drive && driveTrainMap[this.selectedCar.stats.drive] !== undefined) {
+
+            playerCar.driveTrain = driveTrainMap[this.selectedCar.stats.drive];
+            console.log(`Ustawiono napęd ${this.selectedCar.stats.drive} (${driveTrainMap[this.selectedCar.stats.drive]}) dla pojazdu gracza`);
+        }
 
         if (playerCar.spriteManager) {
             const spritePath = `/cars/${this.selectedCar.type}/${this.selectedCar.color}/sprites.png`;
@@ -574,7 +536,7 @@ class GameEngine {
 
         switch (e.key) {
             case "ArrowUp":
-                playerCar.setThrottle(183.91);
+                playerCar.setThrottle(183.91 * this.speedMultiplier);
                 break;
             case "ArrowDown":
                 playerCar.setThrottle(-30);

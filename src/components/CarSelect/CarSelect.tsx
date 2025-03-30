@@ -11,12 +11,12 @@ interface CarStats {
 
 interface Car {
     id: number
-    type: string  // typ auta: 'aubi', 'bemdablju', 'donda', 'saat'
+    type: string
     name: string
     price: number
     owned: boolean
     stats: CarStats
-    color?: string  // kolor: 'black', 'red', 'white', 'yellow'
+    color?: string
     availableColors: string[]
     colorUnlocked?: boolean
 }
