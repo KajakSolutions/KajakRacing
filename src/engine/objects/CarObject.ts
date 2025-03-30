@@ -4,7 +4,6 @@ import { add, dotProduct, length, subtract, vec2D } from "../utils/math.ts"
 import { ColliderInfo } from "./Colliders/Collider.ts"
 import {CarSoundSystem} from "./Sounds/CarSoundSystem.ts";
 import {TrackSurfaceManager} from "./TrackSurfaceManager.ts";
-import { CarObjectOptions } from "@kajaksolutions/kajakengine"
 
 export interface CarObjectOptions extends PhysicObjectOptions {
     maxGrip?: number;
