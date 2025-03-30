@@ -1152,5 +1152,29 @@
         }
 
     ],
-    "movingBarriers": []
+    "movingBarriers": [],
+    "weather": {
+        "initialWeather": "CLEAR",
+        "minDuration": 20000,
+        "maxDuration": 60000,
+        "intensity": 0.8,
+        "allowedWeatherTypes": ["CLEAR", "RAIN"],
+        "puddleSpawnPoints": [
+            {
+                "position": { "x": -30, "y": -10 },
+                "size": { "x": 5, "y": 4 },
+                "type": "puddle"
+            },
+            {
+                "position": { "x": 15, "y": 15 },
+                "size": { "x": 6, "y": 3 },
+                "type": "puddle"
+            },
+            {
+                "position": { "x": 40, "y": -20 },
+                "size": { "x": 4, "y": 4 },
+                "type": "ice"
+            }
+        ]
+    }
 }

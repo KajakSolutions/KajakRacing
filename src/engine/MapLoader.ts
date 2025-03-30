@@ -14,6 +14,7 @@ import {SurfaceType} from "./objects/TrackSurfaceSegment.ts";
 import {TrackSurfaceManager} from "./objects/TrackSurfaceManager.ts";
 import MovingBarrier from "./objects/MovingBarrier.ts";
 import {WeatherSystem, WeatherType} from "./objects/WeatherSystem.ts";
+import { NitroManager } from "./objects/NitroManager.ts"
 
 
 interface MapConfig {
@@ -31,6 +32,14 @@ interface MapConfig {
     surfaces: SurfaceConfig;
     movingBarriers?: MovingBarrierConfig[];
     weather?: WeatherConfig;
+    nitroSpawns?: NitroSpawnConfig[];
+}
+
+interface NitroSpawnConfig {
+    position: Vec2D;
+    respawnTime?: number;
+    size?: Vec2D;
+    spriteSrc?: string;
 }
 
 interface WeatherConfig {
@@ -206,6 +215,10 @@ export class MapLoader {
 
         const surfaceManager = new TrackSurfaceManager();
 
+        if (config.nitroSpawns) {
+            const nitroManager = new NitroManager(scene);
+            nitroManager.initialize(config.nitroSpawns || []);
+        }
 
         let weatherConfig: WeatherConfig = {
             initialWeather: WeatherType.CLEAR,

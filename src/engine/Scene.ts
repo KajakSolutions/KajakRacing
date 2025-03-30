@@ -29,6 +29,7 @@ export default class Scene {
     private _debugMode: boolean = false
 
     private _weatherSystem: WeatherSystem | null = null;
+    private _secondBackground: HTMLImageElement
 
     constructor(
         worldBounds: BoundingBox,
@@ -38,6 +39,9 @@ export default class Scene {
         this._quadTree = new QuadTree(worldBounds)
         this._map = map
         this._raceManager = new RaceManager(raceManagerOptions)
+
+        this._secondBackground = new Image();
+        this._secondBackground.src = this.map.secondBackgroundSrc || "";
 
         soundManager.loadSound('background_music','game/sounds/background.mp3', {
             loop: true,
@@ -146,10 +150,27 @@ export default class Scene {
     draw(ctx: CanvasRenderingContext2D): void {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
+        if (this._secondBackground && this._secondBackground.complete) {
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+            const imageRatio = this._secondBackground.width / this._secondBackground.height;
+
+
+            const drawWidth = ctx.canvas.width;
+            const drawHeight = ctx.canvas.width / imageRatio;
+
+            const drawX = (ctx.canvas.width - drawWidth) / 2;
+            const drawY = (ctx.canvas.height - drawHeight) / 2;
+
+            ctx.drawImage(this._secondBackground, drawX, drawY, drawWidth, drawHeight);
+
+            ctx.restore();
+        }
+
         ctx.save()
         ctx.translate(ctx.canvas.width / 2, ctx.canvas.height / 2)
         ctx.scale(Scene.scale, Scene.scale)
-
 
         const values = Array.from(this._gameObjects.values());
         for (let i = values.length - 1; i >= 0; i--) {
@@ -177,7 +198,6 @@ export default class Scene {
         }
 
         ctx.restore()
-
     }
 
 

@@ -2,7 +2,6 @@ import {CarObject, CheckpointObject, KajakEngine, Overlap, Scene,} from "./index
 import {MapLoader} from "./MapLoader.ts";
 import {soundManager} from "./SoundManager.ts";
 import {TrackSurfaceSegment} from "./objects/TrackSurfaceSegment.ts";
-import {NitroManager} from "./objects/NitroManager.ts";
 import {ObstacleManager} from "./objects/ObstacleManager.ts";
 import {ItemManager} from "./objects/ItemManager.ts";
 import {WeatherSystem, WeatherType} from "./objects/WeatherSystem.ts";
@@ -46,7 +45,6 @@ class GameEngine {
     private currentScene: Scene | null = null;
     private debugState: boolean = false;
     private audioInitialized: boolean = false;
-    private nitroManager: NitroManager | null = null;
     private obstacleManager: ObstacleManager | null = null;
     private itemManager: ItemManager | null = null;
     private weatherSystem: WeatherSystem | null = null;
@@ -114,7 +112,6 @@ class GameEngine {
 
         this.engine = null;
         this.currentScene = null;
-        this.nitroManager = null;
         this.obstacleManager = null;
         this.itemManager = null;
         this.weatherSystem = null;
@@ -261,26 +258,6 @@ class GameEngine {
         const item = args[0].toLowerCase();
 
         switch (item) {
-            case 'nitro': {
-                const playerCar = this.findPlayerCar();
-                if (!playerCar) {
-                    return 'Nie znaleziono pojazdu gracza';
-                }
-
-                if (this.nitroManager && this.currentScene) {
-                    this.nitroManager.initialize([
-                        {
-                            position: {
-                                x: playerCar.position.x + 5,
-                                y: playerCar.position.y
-                            }
-                        }
-                    ]);
-                    return 'Stworzono nitro';
-                }
-                return 'Nie można stworzyć nitro';
-            }
-
             case 'banana': {
                 const car = this.findPlayerCar();
                 if (!car) {
@@ -473,13 +450,6 @@ class GameEngine {
 
     private setupGameSystems(): void {
         if (!this.currentScene) return;
-
-        this.nitroManager = new NitroManager(this.currentScene);
-        const nitroSpawns = [
-            { position: { x: 20, y: 20 }, respawnTime: 30000 },
-            { position: { x: -20, y: -20 }, respawnTime: 30000 }
-        ];
-        this.nitroManager.initialize(nitroSpawns);
 
         this.obstacleManager = new ObstacleManager(this.currentScene, {
             maxActiveObstacles: 15,
