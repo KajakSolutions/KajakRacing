@@ -39,7 +39,7 @@ export default class CarObject extends PhysicObject {
     private _nitroStrength: number;
     private _nitroActive: boolean = false;
     private _nitroEffectTimer: number = 0;
-    private readonly NITRO_EFFECT_DURATION: number = 3000;
+    private readonly NITRO_EFFECT_DURATION: number = 1500;
 
     // physics stuff
     private readonly inertia: number
@@ -79,7 +79,7 @@ export default class CarObject extends PhysicObject {
         rearAxleToCg,
         wheelSize = vec2D(0.3, 0.7),
         maxNitro = 100,
-        nitroStrength = 2.5,
+        nitroStrength = 1.5,
         bananaPeels = 0,
         maxBananaPeels = 3,
         ...options
@@ -150,6 +150,11 @@ export default class CarObject extends PhysicObject {
     get nitroActive(): boolean {
         return this._nitroActive;
     }
+
+    get nitroStrength(): number {
+        return this._nitroStrength
+    }
+
 
     get maxNitro(): number {
         return this._maxNitro;
@@ -355,6 +360,10 @@ export default class CarObject extends PhysicObject {
         this.brake = value
     }
 
+
+    set nitroStrength(value: number) {
+        this._nitroStrength = value
+    }
     onCollision(other: PhysicObject, collisionInfo: ColliderInfo): void {
         const relativeVelocity = subtract(this.velocity, other.velocity)
 

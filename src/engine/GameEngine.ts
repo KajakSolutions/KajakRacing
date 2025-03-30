@@ -500,9 +500,9 @@ class GameEngine {
         const playerCar = this.findPlayerCar();
         if (!playerCar) return;
 
-        this.speedMultiplier = 1 + (this.selectedCar.stats.speed * 0.1);
+        this.speedMultiplier = 1.6   + (this.selectedCar.stats.speed * 0.4);
 
-         this.nitroValue = this.selectedCar.stats.nitro * 20;
+        playerCar.nitroStrength = 1 + (this.selectedCar.stats.nitro * 0.5);
 
         const driveTrainMap: Record<string, number> = {
             'FWD': 2,
@@ -536,7 +536,7 @@ class GameEngine {
 
         switch (e.key) {
             case "ArrowUp":
-                playerCar.setThrottle(183.91 * this.speedMultiplier);
+                playerCar.setThrottle(45 * this.speedMultiplier);
                 break;
             case "ArrowDown":
                 playerCar.setThrottle(-30);
@@ -612,7 +612,7 @@ class GameEngine {
             totalLaps: raceManager.config.totalLaps,
             bestLapTime: progress.bestLapTime !== Infinity ? progress.bestLapTime : null,
             lastLapTime: progress.lapTimes.length > 0 ? progress.lapTimes[progress.lapTimes.length - 1] : null,
-            isNitroActive: playerCar.nitroActive,
+            isNitroActive:playerCar.nitroActive,
             bananaPeels: playerCar.bananaPeels,
             maxBananaPeels: playerCar.maxBananaPeels,
             nitroAmount: playerCar.nitroAmount,
