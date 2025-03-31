@@ -631,7 +631,7 @@
         {
             "type": "STEADY_MIDDLE",
             "spriteSrc": "game/car2.png",
-            "startOffset": { "x": -4, "y": -4 }
+            "startOffset": { "x": -4, "y": -2 }
         },
         {
             "type": "AGGRESSIVE_CHASER",
