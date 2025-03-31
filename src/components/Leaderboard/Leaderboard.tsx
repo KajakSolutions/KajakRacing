@@ -138,7 +138,7 @@ function Leaderboard() {
                         key={`player-${index}`}
                         className={`player-container ${result.isPlayer ? "player" : ""}`}
                     >
-                        <p className="place">{result.position}</p>
+                        <p className="place">{index + 1}</p>
                         <p className="nick">
                             {getDriverName(result.carId, result.isPlayer)}
                         </p>

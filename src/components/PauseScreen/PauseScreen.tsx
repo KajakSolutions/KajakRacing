@@ -5,7 +5,7 @@ import "./pausescreen.scss";
 
 function PauseScreen() {
     const { resumeGame, exitGame } = useGame();
-    const [musicVolume, setMusicVolume] = useState(50);
+    const [musicVolume, setMusicVolume] = useState(1);
     const [sfxVolume, setSfxVolume] = useState(100);
     const [masterVolume, setMasterVolume] = useState(100);
     const [masterMuted, setMasterMuted] = useState(false);
