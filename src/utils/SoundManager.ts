@@ -1,205 +1,178 @@
-interface Sound {
-    audio: HTMLAudioElement;
-    category: 'music' | 'sfx';
-    volume: number;
-}
+import { soundManager as engineSoundManager } from '@kajaksolutions/kajakengine';
 
 class SoundManager {
-    private sounds: Map<string, Sound> = new Map();
-    private musicVolume: number = 0.5; 
-    private sfxVolume: number = 1.0;   
-    private masterVolume: number = 1.0; 
-    private isMuted: boolean = false;
+    private initialized: boolean = false;
+    private activeGameSounds: Set<string> = new Set();
+    private backgroundMusic: string | null = null;
 
     constructor() {
-        
         this.loadSettings();
-
-        
-        this.loadSound('background_music', '/sounds/background_music.mp3', {
-            category: 'music',
-            loop: true,
-            autoplay: false
-        });
     }
 
     private loadSettings(): void {
-        const savedSettings = localStorage.getItem("audioSettings");
+        const savedSettings = localStorage.getItem('audioSettings');
         if (savedSettings) {
-            const settings = JSON.parse(savedSettings);
-            this.musicVolume = settings.musicVolume / 100;
-            this.sfxVolume = settings.sfxVolume / 100;
-            this.isMuted = settings.musicMuted || settings.sfxMuted;
-        }
-    }
+            try {
+                const settings = JSON.parse(savedSettings);
 
-    public loadSound(
-        id: string,
-        src: string,
-        options: {
-            category: 'music' | 'sfx';
-            loop?: boolean;
-            autoplay?: boolean;
-        }
-    ): void {
-        const audio = new Audio(src);
+                engineSoundManager.setMasterVolume(settings.masterVolume || 1.0);
+                engineSoundManager.setCategoryVolume('music', settings.musicVolume || 0.5);
+                engineSoundManager.setCategoryVolume('sfx', settings.sfxVolume || 1.0);
 
-        if (options.loop) {
-            audio.loop = true;
-        }
+                if (settings.masterMuted) {
+                    engineSoundManager.mute();
+                } else {
+                    engineSoundManager.unmute();
+                }
 
-        if (options.autoplay) {
-            audio.autoplay = true;
-        }
-
-        
-        const volume = options.category === 'music' ? this.musicVolume : this.sfxVolume;
-        audio.volume = volume * this.masterVolume;
-
-        this.sounds.set(id, {
-            audio,
-            category: options.category,
-            volume
-        });
-    }
-
-    public play(id: string): void {
-        const sound = this.sounds.get(id);
-        if (!sound || this.isMuted) return;
-
-        
-        sound.audio.currentTime = 0;
-        sound.audio.play().catch(error => {
-            console.warn(`Failed to play sound ${id}:`, error);
-        });
-    }
-
-    public stop(id: string): void {
-        const sound = this.sounds.get(id);
-        if (!sound) return;
-
-        sound.audio.pause();
-        sound.audio.currentTime = 0;
-    }
-
-    public pause(id: string): void {
-        const sound = this.sounds.get(id);
-        if (!sound) return;
-
-        sound.audio.pause();
-    }
-
-    public resume(id: string): void {
-        const sound = this.sounds.get(id);
-        if (!sound || this.isMuted) return;
-
-        sound.audio.play().catch(error => {
-            console.warn(`Failed to resume sound ${id}:`, error);
-        });
-    }
-
-    public setMusicVolume(volume: number): void {
-        this.musicVolume = volume;
-
-        
-        this.sounds.forEach(sound => {
-            if (sound.category === 'music') {
-                sound.volume = volume;
-                sound.audio.volume = volume * this.masterVolume;
+            } catch (error) {
+                console.error('Failed to load audio settings:', error);
             }
-        });
-    }
-
-    public setSfxVolume(volume: number): void {
-        this.sfxVolume = volume;
-
-        
-        this.sounds.forEach(sound => {
-            if (sound.category === 'sfx') {
-                sound.volume = volume;
-                sound.audio.volume = volume * this.masterVolume;
-            }
-        });
-    }
-
-    public setMasterVolume(volume: number): void {
-        this.masterVolume = volume;
-
-        
-        this.sounds.forEach(sound => {
-            sound.audio.volume = sound.volume * this.masterVolume;
-        });
-    }
-
-    public mute(): void {
-        this.isMuted = true;
-
-        
-        this.sounds.forEach(sound => {
-            sound.audio.pause();
-        });
-    }
-
-    public unmute(): void {
-        this.isMuted = false;
-
-        
-        const backgroundMusic = this.sounds.get('background_music');
-        if (backgroundMusic) {
-            backgroundMusic.audio.play().catch(error => {
-                console.warn('Failed to play background music:', error);
-            });
         }
     }
 
-    public playNitroSound(): void {
-        
-        
-        if (!this.sounds.has('nitro')) {
-            this.loadSound('nitro', '/sounds/nitro.mp3', { category: 'sfx' });
-        }
+    private saveSettings(): void {
+        const settings = {
+            masterVolume: engineSoundManager.getMasterVolume(),
+            musicVolume: engineSoundManager.getCategoryVolume('music'),
+            sfxVolume: engineSoundManager.getCategoryVolume('sfx'),
+            masterMuted: engineSoundManager.muted
+        };
 
-        this.play('nitro');
+        localStorage.setItem('audioSettings', JSON.stringify(settings));
     }
 
-    public playCollisionSound(): void {
-        
-        
-        if (!this.sounds.has('collision')) {
-            this.loadSound('collision', '/sounds/collision.mp3', { category: 'sfx' });
-        }
+    async initialize(): Promise<void> {
+        console.log('Initializing sound manager1...');
+        if (this.initialized) return;
+        console.log('Initializing sound manager2...');
 
-        this.play('collision');
+        try {
+            await this.preloadSounds();
+            this.initialized = true;
+        } catch (error) {
+            console.error('Failed to initialize sound manager:', error);
+        }
     }
 
-    public playEngineSound(revLevel: number): void {
-        
-        
-        if (!this.sounds.has('engine')) {
-            this.loadSound('engine', '/sounds/engine.mp3', {
+    private async preloadSounds(): Promise<void> {
+        try {
+            await engineSoundManager.loadSound('click', 'game/sounds/click.mp3', {
                 category: 'sfx',
+                volume: 0.5
+            });
+
+            await engineSoundManager.loadSound('select', 'game/sounds/select.mp3', {
+                category: 'sfx',
+                volume: 0.7
+            });
+
+            await engineSoundManager.loadSound('back', 'game/sounds/back.mp3', {
+                category: 'sfx',
+                volume: 0.5
+            });
+
+            await engineSoundManager.loadSound('menu_music', 'game/sounds/menu_music.mp3', {
+                category: 'music',
+                volume: 0.5,
                 loop: true
             });
-        }
 
-        const engineSound = this.sounds.get('engine');
-        if (engineSound) {
-            
-            engineSound.audio.playbackRate = 0.8 + (revLevel * 0.7);
-
-            
-            if (engineSound.audio.paused && !this.isMuted) {
-                engineSound.audio.play().catch(error => {
-                    console.warn('Failed to play engine sound:', error);
-                });
-            }
+            console.log('Common sounds preloaded');
+        } catch (error) {
+            console.error('Failed to preload sounds:', error);
         }
     }
 
-    public stopEngineSound(): void {
-        this.stop('engine');
+    play(id: string): void {
+        if (id.includes('music')) {
+            if (this.backgroundMusic && this.backgroundMusic !== id) {
+                this.stop(this.backgroundMusic);
+            }
+            this.backgroundMusic = id;
+        }
+
+        this.activeGameSounds.add(id);
+
+        engineSoundManager.play(id);
+    }
+
+    stop(id: string): void {
+        this.activeGameSounds.delete(id);
+
+        if (id === this.backgroundMusic) {
+            this.backgroundMusic = null;
+        }
+
+        engineSoundManager.stop(id);
+    }
+
+    stopAllGameSounds(): void {
+        this.activeGameSounds.forEach(soundId => {
+            engineSoundManager.stop(soundId);
+        });
+        this.activeGameSounds.clear();
+        this.backgroundMusic = null;
+    }
+
+    setMasterVolume(volume: number): void {
+        engineSoundManager.setMasterVolume(volume);
+        this.saveSettings();
+    }
+
+    setMusicVolume(volume: number): void {
+        engineSoundManager.setCategoryVolume('music', volume);
+        this.saveSettings();
+    }
+
+    setSfxVolume(volume: number): void {
+        engineSoundManager.setCategoryVolume('sfx', volume);
+        this.saveSettings();
+    }
+
+    mute(): void {
+        engineSoundManager.mute();
+        this.saveSettings();
+    }
+
+    unmute(): void {
+        engineSoundManager.unmute();
+        this.saveSettings();
+    }
+
+    toggleMute(): void {
+        if (engineSoundManager.muted) {
+            this.unmute();
+        } else {
+            this.mute();
+        }
+    }
+
+    getMasterVolume(): number {
+        return engineSoundManager.getMasterVolume();
+    }
+
+    getMusicVolume(): number {
+        return engineSoundManager.getCategoryVolume('music');
+    }
+
+    getSfxVolume(): number {
+        return engineSoundManager.getCategoryVolume('sfx');
+    }
+
+    isMuted(): boolean {
+        return engineSoundManager.muted;
+    }
+
+    switchToGameMusic(): void {
+        this.stop('menu_music');
+        this.play('background_music');
+    }
+
+    switchToMenuMusic(): void {
+        this.stop('background_music');
+        this.play('menu_music');
     }
 }
-
 
 export const soundManager = new SoundManager();

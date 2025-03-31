@@ -1,237 +1,277 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
-import { gameEngine, GameState, PlayerCar } from '../engine/GameEngine';
-import { RaceResults } from '@kajaksolutions/kajakengine';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { gameEngine, CarData, GameStats, RaceResult } from '../engine/GameEngine';
+import { soundManager } from '../utils/SoundManager';
 
-interface GameContextData {
-    gameState: GameState;
-    setGameState: (state: GameState) => void;
-    selectCar: (car: PlayerCar) => void;
-    selectedCar: PlayerCar | null;
+type GameStateType = 'LOADING' | 'MAIN_MENU' | 'CAR_SELECT' | 'MAP_SELECT' | 'PLAYING' | 'PAUSED' | 'RACE_COMPLETE';
+
+export interface Car {
+    id: number;
+    name: string;
+    type: string;
+    stats: {
+        speed: number;
+        nitro: number;
+        drive: string;
+    };
+    color: string;
+}
+
+interface GameContextType {
+    gameState: GameStateType;
+    setGameState: (state: GameStateType) => void;
+
+    selectedCar: Car | null;
+    selectCar: (car: Car) => void;
+
     startGame: (mapPath: string) => Promise<void>;
     pauseGame: () => void;
     resumeGame: () => void;
-    raceResults: RaceResults[];
+    exitGame: () => void;
+
+    isNitroActive: boolean;
+    activateNitro: () => void;
+    dropBananaPeel: () => void;
+    toggleDebugMode: () => void;
+    executeCommand: (command: string) => string;
+
     currentPosition: number | null;
     currentLap: number | null;
     totalLaps: number | null;
     bestLapTime: number | null;
     lastLapTime: number | null;
-    activateNitro: () => void;
-    isNitroActive: boolean;
-    closeCanvas: () => void;
+    bananaPeels: number | null;
+    maxBananaPeels: number | null;
+    nitroAmount: number | null;
+    maxNitro: number | null;
+    raceResults: RaceResult[];
+
+    loadingProgress: number;
+    loadingMessage: string;
 }
 
-const GameContext = createContext<GameContextData>({
+const GameContext = createContext<GameContextType>({
     gameState: 'MAIN_MENU',
     setGameState: () => {},
-    selectCar: () => {},
     selectedCar: null,
+    selectCar: () => {},
     startGame: async () => {},
     pauseGame: () => {},
     resumeGame: () => {},
-    raceResults: [],
+    exitGame: () => {},
+    isNitroActive: false,
+    activateNitro: () => {},
+    dropBananaPeel: () => {},
+    toggleDebugMode: () => {},
+    executeCommand: () => '',
     currentPosition: null,
     currentLap: null,
     totalLaps: null,
     bestLapTime: null,
     lastLapTime: null,
-    activateNitro: () => {},
-    isNitroActive: false,
-    closeCanvas: () => {},
+    bananaPeels: null,
+    maxBananaPeels: null,
+    nitroAmount: null,
+    maxNitro: null,
+    raceResults: [],
+    loadingProgress: 0,
+    loadingMessage: '',
 });
 
+export const GameProvider = ({ children }: { children: ReactNode }) => {
+    const [gameState, setGameState] = useState<GameStateType>('MAIN_MENU');
+    const [selectedCar, setSelectedCar] = useState<Car | null>(null);
 
-interface GameProviderProps {
-    children: ReactNode;
-}
-
-
-export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
-    const [gameState, setGameState] = useState<GameState>('MAIN_MENU');
-    const [selectedCar, setSelectedCar] = useState<PlayerCar | null>(null);
-    const [raceResults, setRaceResults] = useState<RaceResults[]>([]);
+    const [isNitroActive, setIsNitroActive] = useState(false);
     const [currentPosition, setCurrentPosition] = useState<number | null>(null);
     const [currentLap, setCurrentLap] = useState<number | null>(null);
     const [totalLaps, setTotalLaps] = useState<number | null>(null);
     const [bestLapTime, setBestLapTime] = useState<number | null>(null);
     const [lastLapTime, setLastLapTime] = useState<number | null>(null);
-    const [isNitroActive, setIsNitroActive] = useState<boolean>(false);
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const [bananaPeels, setBananaPeels] = useState<number | null>(null);
+    const [maxBananaPeels, setMaxBananaPeels] = useState<number | null>(null);
+    const [nitroAmount, setNitroAmount] = useState<number | null>(null);
+    const [maxNitro, setMaxNitro] = useState<number | null>(null);
+    const [raceResults, setRaceResults] = useState<RaceResult[]>([]);
 
+    const [loadingProgress, setLoadingProgress] = useState(0);
+    const [loadingMessage, setLoadingMessage] = useState('');
 
     useEffect(() => {
-        const savedCar = localStorage.getItem('selectedCar');
-        if (savedCar) {
-            setSelectedCar(JSON.parse(savedCar));
-        }
+        soundManager.initialize().then(() => {
+            if (gameState === 'MAIN_MENU') {
+                soundManager.play('menu_music');
+            }
+        });
+
+
     }, []);
 
-
     useEffect(() => {
-        const handleGameStateChange = (state: GameState) => {
-            setGameState(state);
-        };
+        if (gameState === 'MAIN_MENU') {
+            resetGameStats();
+            soundManager.play('menu_music');
+        }
 
-        const handleRaceResults = (results: RaceResults[]) => {
-            setRaceResults(results);
-        };
+        if (gameState === 'PAUSED') {
+            gameEngine.pause();
+        }
 
-        const handleLapTime = (lapTime: number, bestLap: number) => {
-            setLastLapTime(lapTime);
-            setBestLapTime(bestLap);
-        };
+        if (gameState === 'PLAYING') {
+            gameEngine.resume();
+        }
 
-
-        gameEngine.addGameStateListener(handleGameStateChange);
-        gameEngine.addRaceResultsListener(handleRaceResults);
-        gameEngine.addLapTimeListener(handleLapTime);
-
-
-        let animFrameId: number;
-
-        const updateGameInfo = () => {
-            if (gameState === 'PLAYING') {
-                setCurrentPosition(gameEngine.getCurrentPosition());
-                setCurrentLap(gameEngine.getCurrentLap());
-                setTotalLaps(gameEngine.getTotalLaps());
-            }
-
-            animFrameId = requestAnimationFrame(updateGameInfo);
-        };
-
-        animFrameId = requestAnimationFrame(updateGameInfo);
-
-
-        return () => {
-            gameEngine.removeGameStateListener(handleGameStateChange);
-            gameEngine.removeRaceResultsListener(handleRaceResults);
-            gameEngine.removeLapTimeListener(handleLapTime);
-            cancelAnimationFrame(animFrameId);
-        };
+        if (gameState === 'RACE_COMPLETE') {
+            gameEngine.pause();
+        }
     }, [gameState]);
 
-
-    useEffect(() => {
-        const setupCanvas = async () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 1280;
-            canvas.height = 720;
-            canvas.style.position = 'absolute';
-            canvas.style.top = '0';
-            canvas.style.left = '0';
-            canvas.style.zIndex = '0';
-            canvas.id = 'game-canvas';
-
-            canvasRef.current = canvas;
-
-            const gameContainer = document.getElementById('game-container');
-            if (gameContainer) {
-                gameContainer.appendChild(canvas);
-
-                await gameEngine.initialize(canvas);
-            }
-        };
-
-        setupCanvas();
-
-        return () => {
-            if (canvasRef.current) {
-                const canvas = canvasRef.current;
-                const parent = canvas.parentNode;
-                if (parent) {
-                    parent.removeChild(canvas);
-                }
-            }
-            gameEngine.cleanup();
-        };
-    }, []);
-
-
-    const selectCar = (car: PlayerCar) => {
+    const selectCar = (car: Car) => {
         setSelectedCar(car);
-        gameEngine.selectCar(car);
+        soundManager.play('select');
     };
 
+    const resetGameStats = () => {
+        setIsNitroActive(false);
+        setCurrentPosition(null);
+        setCurrentLap(null);
+        setTotalLaps(null);
+        setBestLapTime(null);
+        setLastLapTime(null);
+        setBananaPeels(null);
+        setMaxBananaPeels(null);
+        setNitroAmount(null);
+        setMaxNitro(null);
+        setRaceResults([]);
+    };
 
     const startGame = async (mapPath: string) => {
-        await gameEngine.loadMap(mapPath);
-        gameEngine.start();
-    };
+        if (!selectedCar) return;
 
+        try {
+            setGameState('LOADING');
+            setLoadingProgress(0);
+            setLoadingMessage('Initializing...');
+
+            soundManager.stop('menu_music');
+            soundManager.stop('background_music');
+
+            gameEngine.onStatsUpdate((stats: GameStats) => {
+                setCurrentPosition(stats.position);
+                setCurrentLap(stats.currentLap);
+                setTotalLaps(stats.totalLaps);
+                setBestLapTime(stats.bestLapTime);
+                setLastLapTime(stats.lastLapTime);
+                setIsNitroActive(stats.isNitroActive);
+                setBananaPeels(stats.bananaPeels);
+                setMaxBananaPeels(stats.maxBananaPeels);
+                setNitroAmount(stats.nitroAmount);
+                setMaxNitro(stats.maxNitro);
+            });
+
+            gameEngine.onRaceComplete((results: RaceResult[]) => {
+                setRaceResults(results);
+                setGameState('RACE_COMPLETE');
+                soundManager.play('finish');
+            });
+
+            setLoadingProgress(10);
+            setLoadingMessage('Loading map...');
+
+            await gameEngine.init(mapPath, selectedCar as CarData);
+
+            setLoadingProgress(80);
+            setLoadingMessage('Starting game...');
+
+            gameEngine.start();
+
+            setLoadingProgress(100);
+            setGameState('PLAYING');
+
+            soundManager.play('start');
+            soundManager.play('background_music');
+        } catch (error) {
+            console.error('Failed to start game:', error);
+
+            setGameState('MAP_SELECT');
+
+            soundManager.play('menu_music');
+        }
+    };
 
     const pauseGame = () => {
-        gameEngine.pause();
+        setGameState('PAUSED');
+        soundManager.play('pause');
     };
-
 
     const resumeGame = () => {
-        gameEngine.resume();
+        setGameState('PLAYING');
+        soundManager.play('resume');
     };
 
+    const exitGame = () => {
+        gameEngine.stop();
+        resetGameStats();
+        setGameState('MAIN_MENU');
+
+        soundManager.stop('background_music');
+
+        soundManager.play('menu_music');
+    };
 
     const activateNitro = () => {
         gameEngine.activateNitro();
-        setIsNitroActive(true);
-
-        setTimeout(() => {
-            setIsNitroActive(false);
-        }, 3000);
     };
 
-
-    const closeCanvas = () => {
-        if (canvasRef.current) {
-            const canvas = canvasRef.current;
-            const parent = canvas.parentNode;
-            if (parent) {
-                parent.removeChild(canvas);
-            }
-            canvasRef.current = null;
-        }
-
-        const canvasElement = document.getElementById('game-canvas');
-        if (canvasElement) {
-            const parent = canvasElement.parentNode;
-            if (parent) {
-                parent.removeChild(canvasElement);
-            }
-        }
-
-        const gameContainer = document.getElementById('game-container');
-        if (gameContainer) {
-            const canvases = gameContainer.getElementsByTagName('canvas');
-            while (canvases.length > 0) {
-                gameContainer.removeChild(canvases[0]);
-            }
-        }
+    const dropBananaPeel = () => {
+        gameEngine.dropBananaPeel();
     };
 
+    const toggleDebugMode = () => {
+        gameEngine.toggleDebugMode();
+    };
 
-    const contextValue: GameContextData = {
-        gameState,
-        setGameState,
-        selectCar,
-        selectedCar,
-        startGame,
-        pauseGame,
-        resumeGame,
-        raceResults,
-        currentPosition,
-        currentLap,
-        totalLaps,
-        bestLapTime,
-        lastLapTime,
-        activateNitro,
-        isNitroActive,
-        closeCanvas,
+    const executeCommand = (command: string): string => {
+        try {
+            return gameEngine.executeCommand(command);
+        } catch (error) {
+            console.error('Błąd wykonania polecenia:', error);
+            return `Błąd: ${error instanceof Error ? error.message : 'Nieznany błąd'}`;
+        }
     };
 
     return (
-        <GameContext.Provider value={contextValue}>
+        <GameContext.Provider
+            value={{
+                gameState,
+                setGameState,
+                selectedCar,
+                selectCar,
+                startGame,
+                pauseGame,
+                resumeGame,
+                exitGame,
+                isNitroActive,
+                activateNitro,
+                dropBananaPeel,
+                toggleDebugMode,
+                executeCommand,
+                currentPosition,
+                currentLap,
+                totalLaps,
+                bestLapTime,
+                lastLapTime,
+                bananaPeels,
+                maxBananaPeels,
+                nitroAmount,
+                maxNitro,
+                raceResults,
+                loadingProgress,
+                loadingMessage,
+            }}
+        >
             {children}
         </GameContext.Provider>
     );
 };
-
 
 export const useGame = () => useContext(GameContext);

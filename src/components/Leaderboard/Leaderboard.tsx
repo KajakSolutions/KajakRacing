@@ -1,84 +1,91 @@
-import { useEffect, useState } from "react"
-import { useGame } from "../../context/GameContext"
-import { gameEngine } from  "../../engine/GameEngine.ts"
-import raceResultsTest from "./test.tsx"
-import "./leaderboard.scss"
+import { useEffect, useRef, useState } from "react"
+import { useGame } from "../../context/GameContext";
+import { soundManager } from "../../utils/SoundManager";
+import "./leaderboard.scss";
+import { RaceResult } from "../../engine/GameEngine.ts"
 
 function Leaderboard() {
-    const raceResults = raceResultsTest
-    const { setGameState , closeCanvas} = useGame()
-    const { stop } = gameEngine
-    const [prize, setPrize] = useState(0)
+    const { exitGame, raceResults } = useGame();
+    const [prize, setPrize] = useState(0);
+    const prizeAddedRef = useRef(false);
 
     useEffect(() => {
-        const playerResult = raceResults.find((result) => result.isPlayer)
+        soundManager.stop('background_music');
+        if (!prizeAddedRef.current) {
+            const playerResult = raceResults.find((result) => result.isPlayer);
 
-        if (playerResult) {
-            const position = playerResult.position
-            let prizeMoney = 0
+            if (playerResult) {
+                const position = playerResult.position;
+                let prizeMoney = 0;
 
-            switch (position) {
-                case 1:
-                    prizeMoney = 500
-                    break
-                case 2:
-                    prizeMoney = 300
-                    break
-                case 3:
-                    prizeMoney = 200
-                    break
-                case 4:
-                    prizeMoney = 100
-                    break
-                default:
-                    prizeMoney = 50
-                    break
-            }
+                switch (position) {
+                    case 1:
+                        prizeMoney = 500;
+                        break;
+                    case 2:
+                        prizeMoney = 300;
+                        break;
+                    case 3:
+                        prizeMoney = 200;
+                        break;
+                    case 4:
+                        prizeMoney = 100;
+                        break;
+                    default:
+                        prizeMoney = 50;
+                        break;
+                }
 
-            setPrize(prizeMoney)
+                setPrize(prizeMoney);
 
-            const currentBudget = localStorage.getItem("budget")
-            if (currentBudget) {
-                const newBudget = parseInt(currentBudget) + prizeMoney
-                localStorage.setItem("budget", newBudget.toString())
-            }
+                const currentBudget = localStorage.getItem("budget");
+                if (currentBudget) {
+                    const newBudget = parseInt(currentBudget) + prizeMoney;
+                    localStorage.setItem("budget", newBudget.toString());
 
-            const bestLapTime = playerResult.bestLapTime
-            if (bestLapTime) {
-                saveBestLapTime(bestLapTime)
+                    prizeAddedRef.current = true;
+                }
+
+                const bestLapTime = playerResult.bestLapTime;
+                if (bestLapTime) {
+                    saveBestLapTime(bestLapTime);
+                }
             }
         }
-    }, [raceResults])
+    }, [raceResults]);
 
     const saveBestLapTime = (newTime: number) => {
-        const trackId = "track1"
+        const trackId = localStorage.getItem("currentTrackId") || "track1";
 
-        const savedTimes = localStorage.getItem("trackBestTimes")
-        const bestTimes = savedTimes ? JSON.parse(savedTimes) : {}
+        const savedTimes = localStorage.getItem("trackBestTimes");
+        const bestTimes = savedTimes ? JSON.parse(savedTimes) : {};
 
         if (!bestTimes[trackId] || newTime < bestTimes[trackId]) {
-            bestTimes[trackId] = newTime
-            localStorage.setItem("trackBestTimes", JSON.stringify(bestTimes))
+            bestTimes[trackId] = newTime;
+            localStorage.setItem("trackBestTimes", JSON.stringify(bestTimes));
         }
-    }
+    };
 
     const formatTime = (timeInMs: number): string => {
-        const totalSeconds = timeInMs / 1000
-        const seconds = Math.floor(totalSeconds % 60)
-        const milliseconds = Math.floor((totalSeconds * 100) % 100)
+        const totalSeconds = timeInMs / 1000;
+        const seconds = Math.floor(totalSeconds % 60);
+        const milliseconds = Math.floor((totalSeconds * 100) % 100);
 
-        return `${seconds.toString().padStart(2, "0")}.${milliseconds.toString().padStart(2, "0")}s`
-    }
+        return `${seconds.toString().padStart(2, "0")}.${milliseconds.toString().padStart(2, "00")}s`;
+    };
 
     const handleReturnToMenu = () => {
-        setGameState("MAIN_MENU")
-        closeCanvas()
-        console.log("klik")
-        stop()
-    }
+        soundManager.stop('background_music');
+        soundManager.play('back');
+        exitGame();
+
+        setTimeout(() => {
+            soundManager.play('menu_music');
+        }, 500);
+    };
 
     const getDriverName = (carId: number, isPlayer: boolean): string => {
-        if (isPlayer) return "Gracz"
+        if (isPlayer) return "Gracz";
 
         const aiNames = [
             "Max Speed",
@@ -86,43 +93,52 @@ function Leaderboard() {
             "Diesel",
             "Hot Wheel",
             "Lightning",
-        ]
-        return aiNames[carId % aiNames.length]
-    }
+        ];
+        return aiNames[carId % aiNames.length];
+    };
 
     if (!raceResults || raceResults.length === 0) {
         return (
             <section className="leaderboard">
                 <div className="container">
-                    <h2>Wyniki Wyscigu</h2>
+                    <h2>Wyniki Wyścigu</h2>
                     <p>Ładowanie wyników<span className="loading-text">
                     <span className="dot">.</span>
                     <span className="dot">.</span>
                     <span className="dot">.</span>
                 </span></p>
                     <button id="ReturnToMenu" onClick={handleReturnToMenu}>
-                        Powrot do menu
+                        Powrót do menu
                     </button>
                 </div>
             </section>
-        )
+        );
     }
 
-    const sortedResults = [...raceResults].sort(
+    const resultsById = raceResults.reduce((acc, result) => {
+        if (acc[result.carId] && acc[result.carId].position <= result.position) {
+            return acc;
+        }
+
+        acc[result.carId] = result;
+        return acc;
+    }, {} as Record<number, RaceResult>);
+
+    const sortedResults = Object.values(resultsById).sort(
         (a, b) => a.position - b.position
-    )
+    );
 
     return (
         <section className="leaderboard">
             <div className="container">
-                <h2>Wyniki Wyscigu</h2>
+                <h2>Wyniki Wyścigu</h2>
 
                 {sortedResults.map((result, index) => (
                     <div
                         key={`player-${index}`}
                         className={`player-container ${result.isPlayer ? "player" : ""}`}
                     >
-                        <p className="place">{result.position}</p>
+                        <p className="place">{index + 1}</p>
                         <p className="nick">
                             {getDriverName(result.carId, result.isPlayer)}
                         </p>
@@ -136,11 +152,11 @@ function Leaderboard() {
                 </h3>
 
                 <button id="ReturnToMenu" onClick={handleReturnToMenu}>
-                    Powrot do menu
+                    Powrót do menu
                 </button>
             </div>
         </section>
-    )
+    );
 }
 
-export default Leaderboard
+export default Leaderboard;

@@ -1,22 +1,22 @@
-import { useState, useEffect } from "react"
-import { useGame } from "../../context/GameContext"
-import "./mapselect.scss"
+import { useState, useEffect } from "react";
+import { useGame } from "../../context/GameContext";
+import { soundManager } from "../../utils/SoundManager";
+import "./mapselect.scss";
 
 interface TrackData {
-    id: string
-    name: string
-    description: string
-    difficulty: "easy" | "medium" | "hard"
-    imageSrc: string
-    mapPath: string
-    bestTime: number | null
+    id: string;
+    name: string;
+    description: string;
+    difficulty: "easy" | "medium" | "hard";
+    imageSrc: string;
+    mapPath: string;
+    bestTime: number | null;
 }
 
 function MapSelect() {
-
-    const { startGame, setGameState } = useGame()
-    const [selectedTrack, setSelectedTrack] = useState<TrackData | null>(null)
-    const [tracks, setTracks] = useState<TrackData[]>([])
+    const { startGame, setGameState } = useGame();
+    const [selectedTrack, setSelectedTrack] = useState<TrackData | null>(null);
+    const [tracks, setTracks] = useState<TrackData[]>([]);
 
     useEffect(() => {
         const initialTracks: TrackData[] = [
@@ -26,7 +26,7 @@ function MapSelect() {
                 description: "dzielnicowa zadymka",
                 difficulty: "easy",
                 imageSrc: "/tracks/mapa1.png",
-                mapPath: "tracks/race-track01.json",
+                mapPath: "game/race-track01.json",
                 bestTime: null,
             },
             {
@@ -35,7 +35,7 @@ function MapSelect() {
                 description: "blokowy torpedowiec",
                 difficulty: "medium",
                 imageSrc: "/tracks/mapa2.png",
-                mapPath: "src/assets/race-track02.json",
+                mapPath: "game/race-track02.json",
                 bestTime: null,
             },
             {
@@ -44,54 +44,60 @@ function MapSelect() {
                 description: "lodowa banda",
                 difficulty: "hard",
                 imageSrc: "/tracks/mapa3.png",
-                mapPath: "src/assets/race-track03.json",
+                mapPath: "game/race-track03.json",
                 bestTime: null,
             },
-        ]
+        ];
 
-        const savedTimes = localStorage.getItem("trackBestTimes")
+        const savedTimes = localStorage.getItem("trackBestTimes");
         if (savedTimes) {
-            const parsedTimes = JSON.parse(savedTimes)
+            const parsedTimes = JSON.parse(savedTimes);
 
             initialTracks.forEach((track) => {
                 if (parsedTimes[track.id]) {
-                    track.bestTime = parsedTimes[track.id]
+                    track.bestTime = parsedTimes[track.id];
                 }
-            })
+            });
         }
 
-        setTracks(initialTracks)
-        setSelectedTrack(initialTracks[0])
-    }, [])
+        setTracks(initialTracks);
+        setSelectedTrack(initialTracks[0]);
+    }, []);
 
     const handleSelectTrack = (track: TrackData) => {
-        setSelectedTrack(track)
-    }
+        setSelectedTrack(track);
+        soundManager.play('select');
+    };
 
     const handleStartRace = async () => {
-        if (!selectedTrack) return
+        if (!selectedTrack) return;
+
+        localStorage.setItem("currentTrackId", selectedTrack.id);
+
         try {
-            await startGame(selectedTrack.mapPath)
+            soundManager.play('start');
+            await startGame(selectedTrack.mapPath);
         } catch (error) {
-            console.error("Failed to start race:", error)
+            console.error("Failed to start race:", error);
         }
-    }
+    };
 
     const formatTime = (timeInMs: number | null): string => {
-        if (timeInMs === null) return "--.-s"
+        if (timeInMs === null) return "--.-s";
 
-        const seconds = timeInMs / 1000
-        return seconds.toFixed(2) + "s"
-    }
+        const seconds = timeInMs / 1000;
+        return seconds.toFixed(2) + "s";
+    };
 
-    const handleLastPageClick = () => {
-        setGameState("CAR_SELECT")
-    }
+    const handleBackClick = () => {
+        soundManager.play('back');
+        setGameState("CAR_SELECT");
+    };
 
     return (
         <section className="map-select">
             <header>
-                <div className="arrow" onClick={handleLastPageClick}></div>
+                <div className="arrow" onClick={handleBackClick}></div>
                 <h2>Wybierz poziom:</h2>
             </header>
             <main>
@@ -120,7 +126,7 @@ function MapSelect() {
                             <p>{track.description}</p>
                         </div>
                     ))}
-                </div>               
+                </div>
             </main>
             <div className="button-select">
                 <button
@@ -128,11 +134,11 @@ function MapSelect() {
                     onClick={handleStartRace}
                     disabled={!selectedTrack}
                 >
-                Wybierz
+                    Wybierz
                 </button>
             </div>
         </section>
-    )
+    );
 }
 
-export default MapSelect
+export default MapSelect;

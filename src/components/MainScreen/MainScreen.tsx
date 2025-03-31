@@ -1,10 +1,12 @@
 import { useGame } from "../../context/GameContext";
+import { soundManager } from "../../utils/SoundManager";
 import "./mainscreen.scss";
 
 function MainScreen() {
     const { setGameState } = useGame();
 
     const handlePlayClick = () => {
+        soundManager.play('select');
         setGameState('CAR_SELECT');
     };
 
