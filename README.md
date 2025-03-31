@@ -10,7 +10,7 @@ KajakRacing is an exciting 2D racing game with arcade-style mechanics, dynamic w
 📙 [here](https://docs-kajaksolutions.granacik.pl)
 
 ## Devlog
- 🧊 [here](https://devlog-kajaksolutions.granacik.pl)
+ 🧊 [here](https://kajaksolutions.granacik.pl)
 
 ## 💪 Engine
 More about KajakEngine here:
