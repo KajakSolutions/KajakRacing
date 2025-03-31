@@ -1,10 +1,10 @@
-import {CarObject, CheckpointObject, KajakEngine, Overlap, Scene,} from "./index";
+import { CarObject, CheckpointObject, KajakEngine, NitroBonus, Overlap, Scene } from "./index"
 import {MapLoader} from "./MapLoader.ts";
 import {soundManager} from "./SoundManager.ts";
 import {TrackSurfaceSegment} from "./objects/TrackSurfaceSegment.ts";
 import {ObstacleManager} from "./objects/ObstacleManager.ts";
 import {ItemManager} from "./objects/ItemManager.ts";
-import {WeatherSystem, WeatherType} from "./objects/WeatherSystem.ts";
+import {WeatherType} from "./objects/WeatherSystem.ts";
 
 export interface CarData {
     id: number;
@@ -47,7 +47,6 @@ class GameEngine {
     private audioInitialized: boolean = false;
     private obstacleManager: ObstacleManager | null = null;
     private itemManager: ItemManager | null = null;
-    private weatherSystem: WeatherSystem | null = null;
     private canvas: HTMLCanvasElement | null = null;
     private selectedCar: CarData | null = null;
     private statsInterval: number | null = null;
@@ -104,6 +103,17 @@ class GameEngine {
             this.statsInterval = null;
         }
 
+        if (this.currentScene) {
+            const cars = Array.from(this.currentScene.gameObjects.values())
+                .filter(obj => obj instanceof CarObject) as CarObject[];
+
+            for (const car of cars) {
+                if (car.soundSystem) {
+                    car.soundSystem.dispose();
+                }
+            }
+        }
+
         if (this.engine) {
             this.engine.stop();
         }
@@ -114,7 +124,6 @@ class GameEngine {
         this.currentScene = null;
         this.obstacleManager = null;
         this.itemManager = null;
-        this.weatherSystem = null;
     }
 
     public setDebugMode(enabled: boolean): void {
@@ -209,12 +218,12 @@ class GameEngine {
     }
 
     private commandWeather(args: string[]): string {
-        if (!this.weatherSystem || !this.currentScene) {
+        if (!this.currentScene || !this.currentScene.weatherSystem) {
             return 'System pogodowy nie jest dostępny';
         }
 
         if (args.length < 1) {
-            return `Obecna pogoda: ${this.weatherSystem.getCurrentWeather()}`;
+            return `Obecna pogoda: ${this.currentScene.weatherSystem.getCurrentWeather()}`;
         }
 
         const weatherType = args[0].toUpperCase();
@@ -223,7 +232,7 @@ class GameEngine {
         }
 
         const weatherEnum = WeatherType[weatherType as keyof typeof WeatherType];
-        this.weatherSystem.forceWeather(weatherEnum);
+        this.currentScene.weatherSystem.forceWeather(weatherEnum);
 
         return `Zmieniono pogodę na ${weatherType}`;
     }
@@ -376,7 +385,8 @@ class GameEngine {
         const barriers = Array.from(scene.gameObjects.values())
             .filter(obj => !(obj instanceof CarObject) &&
                 !(obj instanceof CheckpointObject) &&
-                !(obj instanceof TrackSurfaceSegment));
+                !(obj instanceof TrackSurfaceSegment) &&
+                !(obj instanceof NitroBonus));
 
         for (let i = 0; i < cars.length; i++) {
             for (let j = i + 1; j < cars.length; j++) {
@@ -437,7 +447,7 @@ class GameEngine {
             await playerCar.soundSystem.initialize();
         }
 
-        await soundManager.loadSound('background_music', '/sounds/background.mp3', {
+        await soundManager.loadSound('background_music', 'game/sounds/background.mp3', {
             loop: true,
             volume: 0.5,
             category: 'music'

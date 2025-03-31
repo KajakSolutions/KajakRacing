@@ -38,6 +38,8 @@ const CarSelect = () => {
         const savedCars = localStorage.getItem("cars")
         const savedBudget = localStorage.getItem("budget")
 
+        soundManager.play('music_music')
+
         if (savedCars) {
             setCars(JSON.parse(savedCars))
         } else {
@@ -171,7 +173,6 @@ const CarSelect = () => {
             }
 
             setCars(updatedCars)
-            soundManager.play('purchase')
         }
     }
 
@@ -277,7 +278,6 @@ const CarSelect = () => {
             }
 
             setCars(updatedCars)
-            soundManager.play('purchase')
 
             if (currentCar.colorUnlocked) {
                 setShowEditScreen(false)

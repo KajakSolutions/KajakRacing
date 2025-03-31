@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { useGame } from "../../context/GameContext";
 import { soundManager } from "../../utils/SoundManager";
 import "./leaderboard.scss";
+import { RaceResult } from "../../engine/GameEngine.ts"
 
 function Leaderboard() {
     const { exitGame, raceResults } = useGame();
@@ -9,6 +10,7 @@ function Leaderboard() {
     const prizeAddedRef = useRef(false);
 
     useEffect(() => {
+        soundManager.stop('background_music');
         if (!prizeAddedRef.current) {
             const playerResult = raceResults.find((result) => result.isPlayer);
 
@@ -73,8 +75,13 @@ function Leaderboard() {
     };
 
     const handleReturnToMenu = () => {
+        soundManager.stop('background_music');
         soundManager.play('back');
         exitGame();
+
+        setTimeout(() => {
+            soundManager.play('menu_music');
+        }, 500);
     };
 
     const getDriverName = (carId: number, isPlayer: boolean): string => {
@@ -108,7 +115,16 @@ function Leaderboard() {
         );
     }
 
-    const sortedResults = [...raceResults].sort(
+    const resultsById = raceResults.reduce((acc, result) => {
+        if (acc[result.carId] && acc[result.carId].position <= result.position) {
+            return acc;
+        }
+
+        acc[result.carId] = result;
+        return acc;
+    }, {} as Record<number, RaceResult>);
+
+    const sortedResults = Object.values(resultsById).sort(
         (a, b) => a.position - b.position
     );
 

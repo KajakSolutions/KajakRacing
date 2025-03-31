@@ -2,6 +2,8 @@ import { soundManager as engineSoundManager } from '../engine/SoundManager';
 
 class SoundManager {
     private initialized: boolean = false;
+    private activeGameSounds: Set<string> = new Set();
+    private backgroundMusic: string | null = null;
 
     constructor() {
         this.loadSettings();
@@ -23,7 +25,6 @@ class SoundManager {
                     engineSoundManager.unmute();
                 }
 
-                this.initialized = true;
             } catch (error) {
                 console.error('Failed to load audio settings:', error);
             }
@@ -42,7 +43,9 @@ class SoundManager {
     }
 
     async initialize(): Promise<void> {
+        console.log('Initializing sound manager1...');
         if (this.initialized) return;
+        console.log('Initializing sound manager2...');
 
         try {
             await this.preloadSounds();
@@ -54,27 +57,22 @@ class SoundManager {
 
     private async preloadSounds(): Promise<void> {
         try {
-            await engineSoundManager.loadSound('click', '/sounds/click.mp3', {
+            await engineSoundManager.loadSound('click', 'game/sounds/click.mp3', {
                 category: 'sfx',
                 volume: 0.5
             });
 
-            await engineSoundManager.loadSound('hover', '/sounds/hover.mp3', {
-                category: 'sfx',
-                volume: 0.3
-            });
-
-            await engineSoundManager.loadSound('select', '/sounds/select.mp3', {
+            await engineSoundManager.loadSound('select', 'game/sounds/select.mp3', {
                 category: 'sfx',
                 volume: 0.7
             });
 
-            await engineSoundManager.loadSound('back', '/sounds/back.mp3', {
+            await engineSoundManager.loadSound('back', 'game/sounds/back.mp3', {
                 category: 'sfx',
                 volume: 0.5
             });
 
-            await engineSoundManager.loadSound('menu_music', '/sounds/menu_music.mp3', {
+            await engineSoundManager.loadSound('menu_music', 'game/sounds/menu_music.mp3', {
                 category: 'music',
                 volume: 0.5,
                 loop: true
@@ -87,11 +85,34 @@ class SoundManager {
     }
 
     play(id: string): void {
+        if (id.includes('music')) {
+            if (this.backgroundMusic && this.backgroundMusic !== id) {
+                this.stop(this.backgroundMusic);
+            }
+            this.backgroundMusic = id;
+        }
+
+        this.activeGameSounds.add(id);
+
         engineSoundManager.play(id);
     }
 
     stop(id: string): void {
+        this.activeGameSounds.delete(id);
+
+        if (id === this.backgroundMusic) {
+            this.backgroundMusic = null;
+        }
+
         engineSoundManager.stop(id);
+    }
+
+    stopAllGameSounds(): void {
+        this.activeGameSounds.forEach(soundId => {
+            engineSoundManager.stop(soundId);
+        });
+        this.activeGameSounds.clear();
+        this.backgroundMusic = null;
     }
 
     setMasterVolume(volume: number): void {
@@ -141,6 +162,16 @@ class SoundManager {
 
     isMuted(): boolean {
         return engineSoundManager.muted;
+    }
+
+    switchToGameMusic(): void {
+        this.stop('menu_music');
+        this.play('background_music');
+    }
+
+    switchToMenuMusic(): void {
+        this.stop('background_music');
+        this.play('menu_music');
     }
 }
 

@@ -215,11 +215,6 @@ export class MapLoader {
 
         const surfaceManager = new TrackSurfaceManager();
 
-        if (config.nitroSpawns) {
-            const nitroManager = new NitroManager(scene);
-            nitroManager.initialize(config.nitroSpawns || []);
-        }
-
         let weatherConfig: WeatherConfig = {
             initialWeather: WeatherType.CLEAR,
             minDuration: 30000,
@@ -335,6 +330,11 @@ export class MapLoader {
             const obstacle = this.createObstacle(obstacleConfig);
             scene.addObject(obstacle);
         });
+
+        if (config.nitroSpawns) {
+            const nitroManager = new NitroManager(scene);
+            nitroManager.initialize(config.nitroSpawns || []);
+        }
 
         return scene;
     }

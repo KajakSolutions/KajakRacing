@@ -8,7 +8,6 @@ export class EngineSoundGenerator {
     private modulationGain!: GainNode;
     private initialized: boolean = false;
     private analyser!: AnalyserNode;
-    private canvas!: HTMLCanvasElement;
     private animationFrameId: number | null = null;
     private readonly carId: string;
     private baseVolume: number = 1.0;
@@ -114,11 +113,6 @@ export class EngineSoundGenerator {
 
         if (this.animationFrameId !== null) {
             cancelAnimationFrame(this.animationFrameId);
-        }
-
-        const container = this.canvas.parentElement;
-        if (container) {
-            document.body.removeChild(container);
         }
 
         this.engineOsc.stop();

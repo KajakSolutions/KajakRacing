@@ -36,6 +36,7 @@ function PauseScreen() {
 
     const handleExitClick = () => {
         soundManager.play('back');
+        soundManager.stop('background_music');
         exitGame();
     };
 
@@ -85,7 +86,7 @@ function PauseScreen() {
                             type="range"
                             name="music"
                             id="music"
-                            min="0"
+                            min="1"
                             max="100"
                             value={musicVolume}
                             onChange={(e) => setMusicVolume(parseInt(e.target.value))}
@@ -101,7 +102,7 @@ function PauseScreen() {
                             type="range"
                             name="sfx"
                             id="sfx"
-                            min="0"
+                            min="1"
                             max="100"
                             value={sfxVolume}
                             onChange={(e) => setSfxVolume(parseInt(e.target.value))}

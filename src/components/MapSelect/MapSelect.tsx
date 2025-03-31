@@ -72,7 +72,6 @@ function MapSelect() {
     const handleStartRace = async () => {
         if (!selectedTrack) return;
 
-        // Save the current track ID to localStorage
         localStorage.setItem("currentTrackId", selectedTrack.id);
 
         try {

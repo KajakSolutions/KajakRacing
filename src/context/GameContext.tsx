@@ -151,6 +151,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
             setLoadingMessage('Initializing...');
 
             soundManager.stop('menu_music');
+            soundManager.stop('background_music');
 
             gameEngine.onStatsUpdate((stats: GameStats) => {
                 setCurrentPosition(stats.position);
@@ -185,6 +186,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
             setGameState('PLAYING');
 
             soundManager.play('start');
+            soundManager.play('background_music');
         } catch (error) {
             console.error('Failed to start game:', error);
 
@@ -206,10 +208,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
     const exitGame = () => {
         gameEngine.stop();
-
         resetGameStats();
-
         setGameState('MAIN_MENU');
+
+        soundManager.stop('background_music');
 
         soundManager.play('menu_music');
     };
