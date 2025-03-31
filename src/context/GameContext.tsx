@@ -97,11 +97,13 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     const [loadingMessage, setLoadingMessage] = useState('');
 
     useEffect(() => {
-        soundManager.initialize();
+        soundManager.initialize().then(() => {
+            if (gameState === 'MAIN_MENU') {
+                soundManager.play('menu_music');
+            }
+        });
 
-        if (gameState === 'MAIN_MENU') {
-            soundManager.play('menu_music');
-        }
+
     }, []);
 
     useEffect(() => {

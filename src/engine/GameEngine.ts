@@ -1,10 +1,12 @@
-import { CarObject, CheckpointObject, KajakEngine, NitroBonus, Overlap, Scene } from "./index"
-import {MapLoader} from "./MapLoader.ts";
-import {soundManager} from "./SoundManager.ts";
-import {TrackSurfaceSegment} from "./objects/TrackSurfaceSegment.ts";
-import {ObstacleManager} from "./objects/ObstacleManager.ts";
-import {ItemManager} from "./objects/ItemManager.ts";
-import {WeatherType} from "./objects/WeatherSystem.ts";
+import {
+    CarObject,
+    CheckpointObject, ItemManager,
+    KajakEngine,
+    MapLoader,
+    NitroBonus, ObstacleManager,
+    Overlap,
+    Scene, soundManager, TrackSurfaceSegment,
+} from "@kajaksolutions/kajakengine"
 
 export interface CarData {
     id: number;
@@ -231,8 +233,14 @@ class GameEngine {
             return 'Nieprawidłowy typ pogody. Dostępne opcje: clear, rain, snow';
         }
 
+        enum WeatherType {
+            CLEAR = "CLEAR",
+            RAIN = "RAIN",
+            SNOW = "SNOW"
+        }
+
         const weatherEnum = WeatherType[weatherType as keyof typeof WeatherType];
-        this.currentScene.weatherSystem.forceWeather(weatherEnum);
+        this.currentScene.weatherSystem.forceWeather(weatherEnum as WeatherType);
 
         return `Zmieniono pogodę na ${weatherType}`;
     }

@@ -1,4 +1,4 @@
-import { soundManager as engineSoundManager } from '../engine/SoundManager';
+import { soundManager as engineSoundManager } from '@kajaksolutions/kajakengine';
 
 class SoundManager {
     private initialized: boolean = false;
