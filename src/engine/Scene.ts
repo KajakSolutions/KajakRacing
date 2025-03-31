@@ -47,9 +47,7 @@ export default class Scene {
             loop: true,
             volume: 0.5,
             category: 'music'
-        }).then(() => {
-            soundManager.play('background_music');
-        });
+        })
     }
 
     get weatherSystem(): WeatherSystem | null {
@@ -150,24 +148,6 @@ export default class Scene {
     draw(ctx: CanvasRenderingContext2D): void {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
-        if (this._secondBackground && this._secondBackground.complete) {
-            ctx.save();
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-            const imageRatio = this._secondBackground.width / this._secondBackground.height;
-
-
-            const drawWidth = ctx.canvas.width;
-            const drawHeight = ctx.canvas.width / imageRatio;
-
-            const drawX = (ctx.canvas.width - drawWidth) / 2;
-            const drawY = (ctx.canvas.height - drawHeight) / 2;
-
-            ctx.drawImage(this._secondBackground, drawX, drawY, drawWidth, drawHeight);
-
-            ctx.restore();
-        }
-
         ctx.save()
         ctx.translate(ctx.canvas.width / 2, ctx.canvas.height / 2)
         ctx.scale(Scene.scale, Scene.scale)
@@ -186,6 +166,24 @@ export default class Scene {
                 obj.rotation
             )
             obj.spriteManager.drawSprite(ctx, spriteIndex, obj.position)
+        }
+
+        if (this._secondBackground && this._secondBackground.complete) {
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+            const imageRatio = this._secondBackground.width / this._secondBackground.height;
+
+
+            const drawWidth = ctx.canvas.width;
+            const drawHeight = ctx.canvas.width / imageRatio;
+
+            const drawX = (ctx.canvas.width - drawWidth) / 2;
+            const drawY = (ctx.canvas.height - drawHeight) / 2;
+
+            ctx.drawImage(this._secondBackground, drawX, drawY, drawWidth, drawHeight);
+
+            ctx.restore();
         }
 
         if (this._weatherSystem) {
