@@ -81,7 +81,7 @@ Access the in-game developer console by pressing **F12** or **`** during gamepla
 
 1. Clone the repository
    ```
-   git clone https://github.com/your-username/kajakracing.git
+   git clone https://github.com/KajakSolutions/kajakracing.git
    cd kajakracing
    ```
 
